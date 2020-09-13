@@ -1,4 +1,8 @@
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
+
+from CTFe.config import constants
 
 
 # The model's base class configuration
