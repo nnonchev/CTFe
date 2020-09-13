@@ -1,5 +1,6 @@
 # vscode related
 .vscode/
+cli.py
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
