@@ -1,6 +1,4 @@
 from fastapi import FastAPI
-from sqlalchemy.orm import Session
-from fastapi import Depends
 
 from CTFe.config.database import dal
 
