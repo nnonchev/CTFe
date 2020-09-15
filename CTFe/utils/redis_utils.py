@@ -11,6 +11,26 @@ from CTFe.utils import jwt_utils
 from CTFe.config import constants
 
 
+class RedisDataAccessLayer:
+    def __init__(self):
+        self.redis_url: str = None
+        self.redis_db: int = None
+
+    @asynccontextmanager
+    async def get_redis_conn(self):
+        """ Provide a transaction scope for redis """
+        if self.redis_url is None:
+            raise ValueError(f"Invalid redis url: { self.redis_url }")
+
+        redis = await aioredis.create_redis_pool(self.redis_url, db=self.redis_db)
+
+        try:
+            yield redis
+        finally:
+            redis.close()
+            await redis.wait_closed()
+
+
 async def store_payload(
     user_payload: user_schemas.UserRedisPayload,
     redis_dal: RedisDataAccessLayer,
@@ -54,26 +74,6 @@ async def delete_key(
         await redis.delete(id)
 
 
-class RedisDataAccessLayer:
-    def __init__(self):
-        self.redis_url: str = None
-        self.redis_db: int = None
-
-    @asynccontextmanager
-    async def get_redis_conn(self):
-        """ Provide a transaction scope for redis """
-        if self.redis_url is None:
-            raise ValueError(f"Invalid redis url: { self.redis_url }")
-
-        redis = await aioredis.create_redis_pool(self.redis_url, db=self.redis_db)
-
-        try:
-            yield redis
-        finally:
-            redis.close()
-            await redis.wait_closed()
-
-
-reids_dal = RedisDataAccessLayer()
-reids_dal.redis_url = constants.REDIS_HOST_ADDR
+redis_dal = RedisDataAccessLayer()
+redis_dal.redis_url = constants.REDIS_ADDRESS
 redis_dal.redis_db = constants.REDIS_DB_NAME
