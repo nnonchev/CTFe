@@ -45,11 +45,18 @@ if DB_NAME is None:
 # Redis related configs
 # ----------------------
 REDIS_EXPIRE = 1 * 60  # Calculated in seconds (e.g. 2 * 60 => 2 minutes)
-REDIS_HOST_ADDR = f"redis://{os.getenv('REDIS_ADDR')}"
+
+REDIS_HOST_ADDR = f"redis://{os.getenv('REDIS_ADDRESS')}"
+REDIS_DB_NAME = os.getenv("REDIS_DB_NAME")
+
+TEST_REDIS_HOST_ADDR = f"redis://{os.getenv('TEST_REDIS_ADDRESS')}"
+TEST_REDIS_DB_NAME = os.getenv("TEST_REDIS_DB_NAME")
+
 
 if REDIS_HOST_ADDR is None:
     raise none_value_error("REDIS_ADDR")
-
+if REDIS_DB_NAME is None:
+    raise none_value_error("REDIS_DB_NAME")
 
 # JWT related configs
 # --------------------
