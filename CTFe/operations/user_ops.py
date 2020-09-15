@@ -5,6 +5,20 @@ from sqlalchemy.sql.expression import (
 )
 
 from CTFe.models import User
+from CTFe.schemas import user_schemas
+
+
+def create_user(
+    session: Session,
+    user_create: user_schemas.UserCreate,
+) -> User:
+    db_user = User(**user_create.dict())
+
+    session.add(db_user)
+    session.commit()
+    session.refresh(db_user)
+
+    return db_user
 
 
 def read_user_by_(
