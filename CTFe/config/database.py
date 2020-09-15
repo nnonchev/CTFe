@@ -1,3 +1,5 @@
+from contextlib import contextmanager
+
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
@@ -19,7 +21,7 @@ class DataAccessLayer:
         self.engine = None
         self._SessionLocal = None
 
-    def init_session(self):
+    def init(self):
         self.engine = create_engine(self.db_url)
         self._SessionLocal = sessionmaker(
             bind=self.engine, autocommit=False, autoflush=False
@@ -27,7 +29,22 @@ class DataAccessLayer:
 
     def get_session(self):
         if self.engine is None:
-            self.init_session()
+            self.init()
+
+        session = self._SessionLocal()
+
+        try:
+            yield session
+        except:
+            session.rollback()
+            raise
+        finally:
+            session.close()
+
+    @contextmanager
+    def get_session_ctx(self):
+        if self.engine is None:
+            self.init()
 
         session = self._SessionLocal()
 
