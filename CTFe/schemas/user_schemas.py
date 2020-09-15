@@ -12,3 +12,11 @@ class UserDetails(BaseModel):
 
     class Config:
         orm_mode = True
+
+
+class UserRedisPayload(BaseModel):
+    id: int
+    username: str
+
+    class Config:
+        orm_mode = True
