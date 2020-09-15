@@ -44,7 +44,7 @@ if DB_NAME is None:
 
 # Redis related configs
 # ----------------------
-REDIS_EXPIRE = 1 * 60  # Calculated in seconds (e.g. 2 * 60 => 2 minutes)
+REDIS_EXPIRE = 1 * 60   # Calculated in seconds (e.g. 2 * 60 => 2 minutes)
 
 REDIS_ADDRESS = f"redis://{os.getenv('REDIS_ADDRESS')}"
 REDIS_DB_NAME = os.getenv("REDIS_DB_NAME")
@@ -70,6 +70,7 @@ if REDIS_DB_NAME is None:
 # --------------------
 JWT_ALGORITHM = "HS256"
 JWT_SECRET = os.getenv("JWT_SECRET")
+JWT_EXPIRE_TIME = 15    # It's in minutes (e.g. 15 => 15 minutes)
 
 if JWT_SECRET is None:
     raise none_value_error("JWT_SECRET")

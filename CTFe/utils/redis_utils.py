@@ -1,3 +1,7 @@
+from datetime import (
+    datetime,
+    timedelta,
+)
 from contextlib import asynccontextmanager
 
 import aioredis
@@ -36,13 +40,22 @@ async def store_payload(
     redis_dal: RedisDataAccessLayer,
 ) -> str:
     """ Store user_payload in redis """
-    id = user_payload.id
+    id: int = user_payload.id
+
+    sub = str(user_payload.id)
+    iat = datetime.now().timestamp()
+    exp = (datetime.now() + timedelta(minutes=constants.JWT_EXPIRE_TIME)).timestamp()
+
     payload = user_payload.json()
 
     async with redis_dal.get_redis_conn() as redis:
         await redis.set(id, payload, expire=constants.REDIS_EXPIRE)
 
-    token = jwt_utils.encode({"id": id})
+    token = jwt_utils.encode({
+        "sub": sub,
+        "iat": iat,
+        "exp": exp,
+    })
 
     return token
 
@@ -51,10 +64,16 @@ async def retrieve_payload(
     token: str,
     redis_dal: RedisDataAccessLayer,
 ) -> user_schemas.UserRedisPayload:
-    token: str = jwt_utils.decode(token).get("id")
+    id: int = (
+        int(
+            jwt_utils
+            .decode(token)
+            .get("sub")
+        )
+    )
 
     async with redis_dal.get_redis_conn() as redis:
-        payload = await redis.get(token)
+        payload = await redis.get(id)
 
     if payload is None:
         raise HTTPException(

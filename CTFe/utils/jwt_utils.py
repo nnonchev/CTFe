@@ -1,6 +1,6 @@
 from jose import (
     jwt,
-    JWTError,
+    ExpiredSignatureError,
 )
 from fastapi import (
     status,
@@ -25,7 +25,7 @@ def decode(token):
             constants.JWT_SECRET,
             algorithms=[constants.JWT_ALGORITHM],
         )
-    except JWTError:
+    except ExpiredSignatureError:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail=f"Could not validate credentials",
