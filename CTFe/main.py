@@ -1,9 +1,16 @@
 from fastapi import FastAPI
 
 from CTFe.config.database import dal
+from CTFe.views import (
+    auth_router,
+)
 
 
 app = FastAPI()
+
+app.include_router(
+    auth_router,
+)
 
 
 if __name__ == "__main__":
