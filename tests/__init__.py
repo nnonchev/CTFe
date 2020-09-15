@@ -16,13 +16,6 @@ dal.init()
 Base.metadata.drop_all(dal.engine)
 Base.metadata.create_all(dal.engine)
 
-# Create user
-with dal.get_session_ctx() as session:
-    user = User(username="client1", password="secret")
-
-    session.add(user)
-    session.commit()
-
 redis_dal.redis_url = constants.TEST_REDIS_ADDRESS
 redis_dal.redis_db = constants.TEST_REDIS_DB_NAME
 
