@@ -9,10 +9,59 @@ from CTFe.utils import jwt_utils
 
 from . import (
     client,
-    dal,
 )
 
 
+# /register Tests
+# ----------------
+def test_register__missing_user_input():
+    json_datas = [
+        # Failed because no username or password fields
+        {},
+        # Failed because no password field
+        {
+            "username": "foo",
+        },
+        # Failed because no username field
+        {
+            "password": "foo",
+        },
+    ]
+
+    for json_data in json_datas:
+        response = client.post("/register", json=json_data)
+
+        assert response.status_code == 422
+
+
+def test_register__success():
+    json_data = {
+        "username": "client1",
+        "password": "secret",
+    }
+
+    response = client.post("/register", json=json_data)
+
+    assert response.status_code == 200
+    assert response.json() == {"id": 1, "username": json_data['username']}
+    assert "token" in response.cookies.keys()
+
+
+def test_register__username_exists():
+    json_data = {
+        "username": "client1",
+        "password": "secret",
+    }
+
+    response = client.post("/register", json=json_data)
+
+    assert response.status_code == 409
+    assert response.json() == {
+        "detail": f"The username: { json_data['username'] } is already taken"}
+
+
+# /login Tests
+# -------------
 def test_login__missing_user_input():
     json_datas = [
         # Failed because no username or password fields
@@ -60,6 +109,73 @@ def test_login__user_found():
     assert "token" in response.cookies.keys()
 
 
+# /me Tests
+# ----------
+def test_logged_in_user_info__missing_token():
+    token = client.cookies.get("token")
+    if token:
+        del client.cookies["token"]
+
+    response = client.get("/me")
+
+    assert response.status_code == 401
+    assert response.json() == {"detail": "You are not logged in"}
+
+    if token:
+        client.cookies["token"] = token
+
+
+def test_logged_in_user_info__expired_token():
+    # Expire token on purpose
+    old_token = client.cookies["token"]
+    exp = (datetime.now() -
+           timedelta(minutes=constants.JWT_EXPIRE_TIME)).timestamp()
+
+    payload = jwt_utils.decode(old_token)
+    payload.update({"exp": exp})
+
+    new_token = jwt_utils.encode(payload)
+    client.cookies["token"] = new_token
+
+    response = client.get("/me")
+
+    assert response.status_code == 401
+    assert response.json() == {"detail": "Could not validate credentials"}
+
+    del client.cookies["token"]
+
+    if old_token is not None:
+        client.cookies["token"] = old_token
+
+
+def test_logged_in_user_info__invalid_token():
+    # No records in redis
+    old_token = client.cookies["token"]
+
+    payload = jwt_utils.decode(old_token)
+    payload.update({"sub": "-1"})
+
+    new_token = jwt_utils.encode(payload)
+    client.cookies["token"] = new_token
+
+    response = client.get("/me")
+
+    assert response.status_code == 401
+    assert response.json() == {"detail": "Can not retrieve user"}
+
+    client.cookies["token"] = old_token
+
+
+def test_logged_in_user_info__success():
+    response = client.get("/me")
+
+    assert response.status_code == 200
+    assert response.json() == {"id": 1, "username": "client1"}
+
+
+
+# /logout Tests
+# --------------
 def test_logout__token_not_found():
     """ Remove token on purpose """
     token = client.cookies["token"]
@@ -75,7 +191,7 @@ def test_logout__token_not_found():
 
 
 def test_logout__token_expired():
-    """ Expire token on purpose """
+    # Expire token on purpose
     old_token = client.cookies["token"]
     exp = (datetime.now() -
            timedelta(minutes=constants.JWT_EXPIRE_TIME)).timestamp()
@@ -95,7 +211,7 @@ def test_logout__token_expired():
 
 
 def test_logout__invalid_token():
-    """ No records in redis """
+    # No records in redis
     old_token = client.cookies["token"]
 
     payload = jwt_utils.decode(old_token)
