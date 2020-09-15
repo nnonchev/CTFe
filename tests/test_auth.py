@@ -46,3 +46,4 @@ def test_login_player__found():
     response = client.post("/login", json=json_data)
     assert response.status_code == 200
     assert response.json() == {"id": 1, "username": json_data["username"]}
+    assert "token" in response.cookies.keys()
