@@ -43,7 +43,7 @@ def test_register__missing_user_input():
         assert response.status_code == 422
 
 
-def test_register__success():
+async def test_register__success():
     client = TestClient(app)
 
     json_data = {
@@ -57,6 +57,15 @@ def test_register__success():
     assert response.json() == {"id": 1, "username": json_data['username']}
     assert "token" in response.cookies.keys()
 
+    token = response.cookies["token"]
+    user_payload = await redis_utils.retrieve_payload(token, redis_dal)
+
+    with dal.get_session_ctx() as session:
+        db_user = session.query(User).get(user_payload.id)
+
+        session.delete(db_user)
+        session.commit()
+
 
 def test_register__username_exists():
     client = TestClient(app)
@@ -66,11 +75,23 @@ def test_register__username_exists():
         "password": "secret",
     }
 
+    with dal.get_session_ctx() as session:
+        db_user = User(
+            username=json_data["username"], password=json_data["password"])
+
+        session.add(db_user)
+        session.commit()
+        session.refresh(db_user)
+
     response = client.post("/register", json=json_data)
 
     assert response.status_code == 409
     assert response.json() == {
         "detail": f"The username: { json_data['username'] } is already taken"}
+
+    with dal.get_session_ctx() as session:
+        session.delete(db_user)
+        session.commit()
 
 
 # /login Tests
@@ -121,11 +142,24 @@ def test_login__user_found():
         "password": "secret",
     }
 
+    with dal.get_session_ctx() as session:
+        db_user = User(
+            username=json_data["username"], password=json_data["password"])
+
+        session.add(db_user)
+        session.commit()
+        session.refresh(db_user)
+
     response = client.post("/login", json=json_data)
 
     assert response.status_code == 200
-    assert response.json() == {"id": 1, "username": json_data["username"]}
+    assert "id" in response.json().keys()
+    assert ("username", json_data["username"]) in response.json().items()
     assert "token" in response.cookies.keys()
+
+    with dal.get_session_ctx() as session:
+        session.delete(db_user)
+        session.commit()
 
 
 # /me Tests
@@ -221,8 +255,18 @@ def test_logout__token_not_found():
 def test_logout__token_expired():
     client = TestClient(app)
 
+    json_data = {
+        "username": "user1",
+        "password": "secret",
+    }
+
+    db_user = User(
+        username=json_data["username"], password=json_data["password"])
+
     with dal.get_session_ctx() as session:
-        db_user = session.query(User).first()
+        session.add(db_user)
+        session.commit()
+        session.refresh(db_user)
 
     sub = str(db_user.id)
     iat = datetime.now().timestamp()
@@ -240,6 +284,10 @@ def test_logout__token_expired():
 
     assert response.status_code == 401
     assert response.json() == {"detail": "Could not validate credentials"}
+
+    with dal.get_session_ctx() as session:
+        session.delete(db_user)
+        session.commit()
 
 
 def test_logout__invalid_token():
@@ -266,8 +314,18 @@ def test_logout__invalid_token():
 async def test_logout__success():
     client = TestClient(app)
 
+    json_data = {
+        "username": "user1",
+        "password": "secret",
+    }
+
+    db_user = User(
+        username=json_data["username"], password=json_data["password"])
+
     with dal.get_session_ctx() as session:
-        db_user = session.query(User).first()
+        session.add(db_user)
+        session.commit()
+        session.refresh(db_user)
 
     user_payload = user_schemas.UserRedisPayload.from_orm(db_user)
     token = await redis_utils.store_payload(user_payload, redis_dal)
@@ -277,3 +335,7 @@ async def test_logout__success():
     response = client.post("/logout")
 
     assert response.status_code == 204
+
+    with dal.get_session_ctx() as session:
+        session.delete(db_user)
+        session.commit()
