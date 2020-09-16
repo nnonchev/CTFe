@@ -1,6 +1,6 @@
 from fastapi.testclient import TestClient
 
-from CTFe.main import app
+# from CTFe.main import app
 from CTFe.config import constants
 from CTFe.models import *
 from CTFe.config.database import (
@@ -19,4 +19,4 @@ Base.metadata.create_all(dal.engine)
 redis_dal.redis_url = constants.TEST_REDIS_ADDRESS
 redis_dal.redis_db = constants.TEST_REDIS_DB_NAME
 
-client = TestClient(app)
+# client = TestClient(app)

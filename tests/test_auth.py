@@ -3,18 +3,27 @@ from datetime import (
     timedelta,
 )
 
-from CTFe.models import User
-from CTFe.config import constants
-from CTFe.utils import jwt_utils
+from fastapi.testclient import TestClient
 
+from CTFe.main import app
+from CTFe.models import User
+from CTFe.schemas import user_schemas
+from CTFe.config import constants
+from CTFe.utils import (
+    jwt_utils,
+    redis_utils,
+)
 from . import (
-    client,
+    dal,
+    redis_dal,
 )
 
 
 # /register Tests
 # ----------------
 def test_register__missing_user_input():
+    client = TestClient(app)
+
     json_datas = [
         # Failed because no username or password fields
         {},
@@ -35,6 +44,8 @@ def test_register__missing_user_input():
 
 
 def test_register__success():
+    client = TestClient(app)
+
     json_data = {
         "username": "client1",
         "password": "secret",
@@ -48,6 +59,8 @@ def test_register__success():
 
 
 def test_register__username_exists():
+    client = TestClient(app)
+
     json_data = {
         "username": "client1",
         "password": "secret",
@@ -63,6 +76,8 @@ def test_register__username_exists():
 # /login Tests
 # -------------
 def test_login__missing_user_input():
+    client = TestClient(app)
+
     json_datas = [
         # Failed because no username or password fields
         {},
@@ -83,6 +98,8 @@ def test_login__missing_user_input():
 
 
 def test_login__user_not_found():
+    client = TestClient(app)
+
     # Failed because user not found
     json_data = {
         "username": "foo",
@@ -96,6 +113,8 @@ def test_login__user_not_found():
 
 
 def test_login__user_found():
+    client = TestClient(app)
+
     # User exists
     json_data = {
         "username": "client1",
@@ -112,74 +131,85 @@ def test_login__user_found():
 # /me Tests
 # ----------
 def test_logged_in_user_info__missing_token():
-    token = client.cookies.get("token")
-    if token:
-        del client.cookies["token"]
+    client = TestClient(app)
 
     response = client.get("/me")
 
     assert response.status_code == 401
     assert response.json() == {"detail": "You are not logged in"}
 
-    if token:
-        client.cookies["token"] = token
 
+async def test_logged_in_user_info__expired_token():
+    client = TestClient(app)
 
-def test_logged_in_user_info__expired_token():
-    # Expire token on purpose
-    old_token = client.cookies["token"]
-    exp = (datetime.now() -
-           timedelta(minutes=constants.JWT_EXPIRE_TIME)).timestamp()
+    with dal.get_session_ctx() as session:
+        db_user = session.query(User).first()
 
-    payload = jwt_utils.decode(old_token)
-    payload.update({"exp": exp})
+    sub = str(db_user.id)
+    iat = datetime.now().timestamp()
+    exp = (datetime.now() - timedelta(minutes=15)).timestamp()
 
-    new_token = jwt_utils.encode(payload)
-    client.cookies["token"] = new_token
+    token = jwt_utils.encode({
+        "sub": sub,
+        "iat": iat,
+        "exp": exp,
+    })
+
+    client.cookies["token"] = token
 
     response = client.get("/me")
 
     assert response.status_code == 401
     assert response.json() == {"detail": "Could not validate credentials"}
 
-    del client.cookies["token"]
-
-    if old_token is not None:
-        client.cookies["token"] = old_token
+    await redis_utils.delete_key(user_payload.id, redis_dal)
 
 
 def test_logged_in_user_info__invalid_token():
+    client = TestClient(app)
+
     # No records in redis
-    old_token = client.cookies["token"]
+    sub = "-1"
+    iat = datetime.now().timestamp()
+    exp = (datetime.now() + timedelta(minutes=15)).timestamp()
 
-    payload = jwt_utils.decode(old_token)
-    payload.update({"sub": "-1"})
+    token = jwt_utils.encode({
+        "sub": sub,
+        "iat": iat,
+        "exp": exp,
+    })
 
-    new_token = jwt_utils.encode(payload)
-    client.cookies["token"] = new_token
+    client.cookies["token"] = token
 
     response = client.get("/me")
 
     assert response.status_code == 401
     assert response.json() == {"detail": "Can not retrieve user"}
 
-    client.cookies["token"] = old_token
 
+async def test_logged_in_user_info__success():
+    client = TestClient(app)
 
-def test_logged_in_user_info__success():
+    with dal.get_session_ctx() as session:
+        db_user = session.query(User).first()
+
+    user_payload = user_schemas.UserRedisPayload.from_orm(db_user)
+    token = await redis_utils.store_payload(user_payload, redis_dal)
+
+    client.cookies["token"] = token
+
     response = client.get("/me")
 
     assert response.status_code == 200
     assert response.json() == {"id": 1, "username": "client1"}
 
+    await redis_utils.delete_key(user_payload.id, redis_dal)
 
 
 # /logout Tests
 # --------------
 def test_logout__token_not_found():
-    """ Remove token on purpose """
-    token = client.cookies["token"]
-    del client.cookies["token"]
+    client = TestClient(app)
 
     response = client.post("/logout")
 
@@ -187,48 +217,63 @@ def test_logout__token_not_found():
     assert response.json() == {"detail": "You are not logged in"}
     assert "token" not in response.cookies.keys()
 
-    client.cookies["token"] = token
-
 
 def test_logout__token_expired():
-    # Expire token on purpose
-    old_token = client.cookies["token"]
-    exp = (datetime.now() -
-           timedelta(minutes=constants.JWT_EXPIRE_TIME)).timestamp()
+    client = TestClient(app)
 
-    payload = jwt_utils.decode(old_token)
-    payload.update({"exp": exp})
+    with dal.get_session_ctx() as session:
+        db_user = session.query(User).first()
 
-    new_token = jwt_utils.encode(payload)
-    client.cookies["token"] = new_token
+    sub = str(db_user.id)
+    iat = datetime.now().timestamp()
+    exp = (datetime.now() - timedelta(minutes=15)).timestamp()
+
+    token = jwt_utils.encode({
+        "sub": sub,
+        "iat": iat,
+        "exp": exp,
+    })
+
+    client.cookies["token"] = token
 
     response = client.post("/logout")
 
     assert response.status_code == 401
     assert response.json() == {"detail": "Could not validate credentials"}
 
-    client.cookies["token"] = old_token
-
 
 def test_logout__invalid_token():
-    # No records in redis
-    old_token = client.cookies["token"]
+    client = TestClient(app)
 
-    payload = jwt_utils.decode(old_token)
-    payload.update({"sub": "-1"})
+    sub = "-1"
+    iat = datetime.now().timestamp()
+    exp = (datetime.now() + timedelta(minutes=15)).timestamp()
 
-    new_token = jwt_utils.encode(payload)
-    client.cookies["token"] = new_token
+    token = jwt_utils.encode({
+        "sub": sub,
+        "iat": iat,
+        "exp": exp,
+    })
+
+    client.cookies["token"] = token
 
     response = client.post("/logout")
 
     assert response.status_code == 401
     assert response.json() == {"detail": "Can not retrieve user"}
 
-    client.cookies["token"] = old_token
 
+async def test_logout__success():
+    client = TestClient(app)
 
-def test_logout__success():
+    with dal.get_session_ctx() as session:
+        db_user = session.query(User).first()
+
+    user_payload = user_schemas.UserRedisPayload.from_orm(db_user)
+    token = await redis_utils.store_payload(user_payload, redis_dal)
+
+    client.cookies["token"] = token
+
     response = client.post("/logout")
 
     assert response.status_code == 204
