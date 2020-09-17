@@ -52,7 +52,7 @@ async def get_user(
     id: int,
     session: Session = Depends(dal.get_session)
 ) -> user_schemas.UserDetails:
-    """ Retrieve a single user from DB """
+    """ Retrieve a user record from DB """
     conditions = and_(
         User.id == id,
     )
@@ -74,7 +74,7 @@ async def get_user_by_username(
     username: str,
     session: Session = Depends(dal.get_session)
 ) -> user_schemas.UserDetails:
-    """ Retrieve a single user from DB """
+    """ Retrieve a user record from DB """
     conditions = and_(
         User.username == username,
     )
@@ -94,7 +94,7 @@ async def get_user_by_username(
 async def get_all_users(
     session: Session = Depends(dal.get_session)
 ) -> List[user_schemas.UserDetails]:
-    """ Retreive all users from DB """
+    """ Retreive multiple users records from DB """
     db_users = user_ops.read_users_by_(session, and_())
     return db_users.all()
 
@@ -106,7 +106,7 @@ async def update_user(
     user_update: user_schemas.UserUpdate,
     session: Session = Depends(dal.get_session)
 ) -> user_schemas.UserDetails:
-    """ Update user from DB """
+    """ Update a user record from DB """
     if user_update.user_type is not None and not enums.UserType.has_type(user_update.user_type):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -129,6 +129,7 @@ def delete_user(
     id: int,
     session: Session = Depends(dal.get_session)
 ):
+    """ Delete a user record from DB """
     conditions = and_(
         User.id == id,
     )

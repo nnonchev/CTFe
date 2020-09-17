@@ -23,7 +23,7 @@ app.include_router(
     user_router,
     prefix="/users",
     dependencies=[
-        Depends(validators.is_of_user_type(enums.UserType.ADMIN)),
+        Depends(validators.validate_admin),
     ]
 )
 
