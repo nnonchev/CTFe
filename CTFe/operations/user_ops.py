@@ -27,3 +27,50 @@ def read_user_by_(
 ) -> User:
     """ Query DB for a user based on multiple queries """
     return session.query(User).filter(conditions).first()
+
+
+def read_users_by_(
+    session: Session,
+    conditions: BooleanClauseList,
+) -> User:
+    """ Query DB for a user based on multiple queries """
+    return session.query(User).filter(conditions)
+
+
+def update_user(
+    session: Session,
+    db_user: User,
+    user_update: user_schemas.UserUpdate,
+) -> User:
+    """ Update user record in DB """
+
+    # Cast to UserUpdate pydantic model
+    user_updated = (
+        user_schemas.UserUpdate.from_orm(db_user)
+    )
+
+    # Update the new fields
+    user_data = user_updated.copy(
+        update=user_update.dict(exclude_unset=True),
+    )
+
+    # Update fields
+    (
+        session
+        .query(User)
+        .filter(User.id == db_user.id)
+        .update(user_data.dict())
+    )
+
+    session.commit()
+    session.refresh(db_user)
+
+    return db_user
+
+
+def delete_user(
+    session: Session,
+    db_user: User,
+):
+    session.delete(db_user)
+    session.commit()
