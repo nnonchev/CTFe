@@ -14,8 +14,8 @@ class UserCreate(BaseModel):
 
 
 class UserUpdate(BaseModel):
-    password: Optional[str]
-    user_type: Optional[str]
+    password: Optional[str] = None
+    user_type: Optional[str] = None
 
     class Config:
         orm_mode = True    

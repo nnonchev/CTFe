@@ -110,7 +110,13 @@ async def update_team(
         Team.id == id,
     )
 
-    db_team = tema_ops.read_team_by_(session, conditions)
+    db_team = team_ops.read_team_by_(session, conditions)
+
+    if db_team is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Team not found"
+        )
 
     db_team = team_ops.update_team(session, db_team, team_update)
     return db_team

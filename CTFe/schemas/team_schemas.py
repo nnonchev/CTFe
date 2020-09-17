@@ -10,8 +10,8 @@ class TeamCreate(BaseModel):
 
 
 class TeamUpdate(BaseModel):
-    name: Optional[str]
-    players: List[user_schemas.UserDetails]
+    name: Optional[str] = None
+    players: List[user_schemas.UserDetails] = None
 
     class Config:
         orm_mode = True

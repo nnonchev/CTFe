@@ -42,7 +42,7 @@ def update_team(
     session: Session,
     db_team: Team,
     team_update: team_schemas.TeamUpdate,
-) -> User:
+) -> Team:
     """ Update team record in DB """
 
     # Cast to TeamUpdate pydantic model

@@ -119,6 +119,12 @@ async def update_user(
 
     db_user = user_ops.read_user_by_(session, conditions)
 
+    if db_user is None:
+        raise HTTPException(
+            status_code=404,
+            detail="User not found"
+        )
+
     db_user = user_ops.update_user(session, db_user, user_update)
     return db_user
 

@@ -4,13 +4,11 @@ from fastapi import (
 )
 
 from CTFe.config.database import dal
-from CTFe.utils import (
-    enums,
-    validators,
-)
+from CTFe.utils import validators
 from CTFe.views import (
     auth_router,
     user_router,
+    team_router,
 )
 
 
@@ -25,6 +23,10 @@ app.include_router(
     dependencies=[
         Depends(validators.validate_admin),
     ]
+)
+app.include_router(
+    team_router,
+    prefix="/teams",
 )
 
 
