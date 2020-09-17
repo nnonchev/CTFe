@@ -4,11 +4,7 @@ from httpx import AsyncClient
 from CTFe.main import app
 from CTFe.models import User
 from CTFe.schemas import user_schemas
-from CTFe.utils import (
-    enums,
-    redis_utils,
-    validators,
-)
+from CTFe.utils import validators
 from . import (
     dal,
     BASE_URL,
