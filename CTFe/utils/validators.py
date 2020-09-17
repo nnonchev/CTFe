@@ -11,46 +11,35 @@ from fastapi import (
 
 from CTFe.config.database import dal
 from CTFe.operations import user_ops
+from CTFe.models import User
+from CTFe.utils.redis_utils import redis_dal
 from CTFe.utils import (
     enums,
     redis_utils,
 )
 
 
-class is_of_user_type:
-    def __init__(
-        self,
-        user_type: enums.UserType,
-    ):
-        if not enums.UserType.has_type(user_type):
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail=f'Wrong user_type value'
-            )
-
-        self.user_type = user_type
-
-    async def __call__(
-        self,
-        token: Optional[str] = Cookie(None),
-        session: Session = Depends(dal.get_session),
-    ) -> bool:
-        if token is None:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="You are not logged in",
-            )
-
-        user_payload = await redis_utils.retrieve_payload(token)
-
-        conditions = and_(
-            User.id == user_payload.id,
+async def validate_admin(
+    token: Optional[str] = Cookie(None),
+    session: Session = Depends(dal.get_session),
+):
+    if token is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="You are not logged in",
         )
 
-        db_user = user_ops.read_user_by_(session, conditions)
+    user_payload = await redis_utils.retrieve_payload(token, redis_dal)
 
-        if db_user.user_type != self.user_type:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="You don't have the correct access"
-            )
+    conditions = and_(
+        User.id == user_payload.id,
+        User.user_type == enums.UserType.ADMIN,
+    )
+
+    db_user = user_ops.read_user_by_(session, conditions)
+
+    if db_user.user_type is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="You don't have the correct access"
+        )
