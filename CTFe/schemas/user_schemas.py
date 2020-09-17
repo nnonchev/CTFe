@@ -24,6 +24,7 @@ class UserUpdate(BaseModel):
 class UserDetails(BaseModel):
     id: int
     username: str
+    team_id: Optional[int] = None
 
     class Config:
         orm_mode = True
