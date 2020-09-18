@@ -20,6 +20,10 @@ class Team(Base):
         "User",
         back_populates="team",
     )
+    attempts = relationship(
+        "Attempt",
+        back_populates="team",
+    )
 
     def __repr__(self):
         return f"<Team { self.id }>"
