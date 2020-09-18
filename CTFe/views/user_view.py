@@ -107,12 +107,6 @@ async def update_user(
     session: Session = Depends(dal.get_session)
 ) -> user_schemas.UserDetails:
     """ Update a user record from DB """
-    if user_update.user_type is not None and not enums.UserType.has_type(user_update.user_type):
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail=f"Wrong user_type value"
-        )
-
     conditions = and_(
         User.id == id,
     )
