@@ -5,10 +5,16 @@ load_dotenv()
 
 
 # Raise error if a value is None
+# -------------------------------
 none_value_error = (
     lambda value_name:
         ValueError(f"Value for { value_name } can not equal None")
 )
+
+
+# Application specific configs
+# -----------------------------
+MAX_TEAM_MEMBERS = 5
 
 
 # DB related configs
