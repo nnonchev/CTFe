@@ -10,6 +10,8 @@ from . import (
 )
 
 
+# Create team tests
+# ------------------
 @pytest.mark.asyncio
 async def test_create_team__already_exists():
     team_data = {
@@ -56,6 +58,8 @@ async def test_create_team__success():
         session.commit()
 
 
+# Get team tests
+# ---------------
 @pytest.mark.asyncio
 async def test_get_team__not_found():
     async with AsyncClient(app=app, base_url=BASE_URL) as client:
@@ -134,6 +138,8 @@ async def test_get_teams__success():
     assert response.json() == []
 
 
+# Update team tests
+# ------------------
 @pytest.mark.asyncio
 async def test_update_team__not_found():
     team_data = {}
@@ -145,38 +151,55 @@ async def test_update_team__not_found():
     assert response.json() == {"detail": "Team not found"}
 
 
-# @pytest.mark.asyncio
-# async def test_update_team__success():
-#     team_data = {
-#         "name": "old name",
-#     }
+@pytest.mark.asyncio
+async def test_update_team__success():
+    user_data = {}
 
-#     new_team_data = {
-#         "name": "new name",
-#     }
+    async with AsyncClient(app=app, base_url=BASE_URL) as client:
+        response = await client.put(f"/users/-1", json=user_data)
 
-#     db_team = Team(**team_data)
+    assert response.status_code == 404
+    assert response.json() == {"detail": "User not found"}
 
-#     with dal.get_session_ctx() as session:
-#         session.add(db_team)
-#         session.commit()
-#         session.refresh(db_team)
-
-#     async with AsyncClient(app=app, base_url=BASE_URL) as client:
-#         response = await client.put(f"/team/{db_team.id}", json=new_team_data)
-
-#     with dal.get_session_ctx() as session:
-#         session.add(db_team)
-#         session.refresh(db_team)
-
-#     assert response.status_code == 200
-#     assert response.json() == team_schemas.TeamDetails.from_orm(db_team)
-
-#     with dal.get_session_ctx() as session:
-#         session.delete(db_team)
-#         session.commit()
+    app.dependency_overrides = {}
 
 
+@pytest.mark.asyncio
+async def test_update_team__success():
+    team_data = {
+        "name": "team old",
+    }
+
+    new_team_data = {
+        "name": "team new",
+    }
+
+    db_team = Team(**team_data)
+
+    with dal.get_session_ctx() as session:
+        session.add(db_team)
+        session.commit()
+        session.refresh(db_team)
+
+    async with AsyncClient(app=app, base_url=BASE_URL) as client:
+        response = await client.put(f"/teams/{db_team.id}", json=new_team_data)
+
+    with dal.get_session_ctx() as session:
+        session.add(db_team)
+        session.refresh(db_team)
+
+        team_details = team_schemas.TeamDetails.from_orm(db_team)
+
+    assert response.status_code == 200
+    assert response.json() == team_details
+
+    with dal.get_session_ctx() as session:
+        session.delete(db_team)
+        session.commit()
+
+
+# Delete team tests
+# ------------------
 @pytest.mark.asyncio
 async def test_delete_team__not_found():
     async with AsyncClient(app=app, base_url=BASE_URL) as client:

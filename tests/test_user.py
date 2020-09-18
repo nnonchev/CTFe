@@ -11,6 +11,8 @@ from . import (
 )
 
 
+# Create user tests
+# ------------------
 @pytest.mark.asyncio
 async def test_create_user__already_exists():
     app.dependency_overrides[validators.validate_admin] = lambda: None
@@ -67,6 +69,8 @@ async def test_create_user__success():
     app.dependency_overrides = {}
 
 
+# Get user tests
+# ---------------
 @pytest.mark.asyncio
 async def test_get_user__not_found():
     app.dependency_overrides[validators.validate_admin] = lambda: None
@@ -166,6 +170,8 @@ async def test_get_users__success():
     app.dependency_overrides = {}
 
 
+# Update user tests
+# ------------------
 @pytest.mark.asyncio
 async def test_update_user__not_found():
     app.dependency_overrides[validators.validate_admin] = lambda: None
@@ -219,6 +225,8 @@ async def test_update_user__success():
     app.dependency_overrides = {}
 
 
+# Delete user tests
+# ------------------
 @pytest.mark.asyncio
 async def test_delete_user__not_found():
     app.dependency_overrides[validators.validate_admin] = lambda: None
