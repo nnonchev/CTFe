@@ -35,7 +35,7 @@ async def create_user(
     )
 
     # Check if a user record with the same unique fields already exists
-    if user_ops.read_user_by_(session, conditions):
+    if user_ops.read_user_by_(session, conditions).first():
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail=f"The username: { user_create.username } is already taken"
@@ -57,11 +57,11 @@ async def get_user(
         User.id == id,
     )
 
-    db_user = user_ops.read_user_by_(session, conditions)
+    db_user = user_ops.read_user_by_(session, conditions).first()
 
     if db_user is None:
         raise HTTPException(
-            status_code=404,
+            status.HTTP_404_NOT_FOUND,
             detail="User not found"
         )
 
@@ -79,11 +79,11 @@ async def get_user_by_username(
         User.username == username,
     )
 
-    db_user = user_ops.read_user_by_(session, conditions)
+    db_user = user_ops.read_user_by_(session, conditions).first()
 
     if db_user is None:
         raise HTTPException(
-            status_code=404,
+            status.HTTP_404_NOT_FOUND,
             detail="User not found"
         )
 
@@ -111,11 +111,11 @@ async def update_user(
         User.id == id,
     )
 
-    db_user = user_ops.read_user_by_(session, conditions)
+    db_user = user_ops.read_user_by_(session, conditions).first()
 
     if db_user is None:
         raise HTTPException(
-            status_code=404,
+            status.HTTP_404_NOT_FOUND,
             detail="User not found"
         )
 
@@ -134,11 +134,11 @@ def delete_user(
         User.id == id,
     )
 
-    db_user = user_ops.read_user_by_(session, conditions)
+    db_user = user_ops.read_user_by_(session, conditions).first()
 
     if db_user is None:
         raise HTTPException(
-            status_code=404,
+            status.HTTP_404_NOT_FOUND,
             detail="User not found"
         )
 

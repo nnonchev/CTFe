@@ -26,7 +26,7 @@ def read_user_by_(
     conditions: BooleanClauseList,
 ) -> User:
     """ Query DB for a user based on multiple queries """
-    return session.query(User).filter(conditions).first()
+    return session.query(User).filter(conditions)
 
 
 def read_users_by_(

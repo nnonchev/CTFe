@@ -35,6 +35,7 @@ class UserUpdate(BaseModel):
 class UserDetails(BaseModel):
     id: int
     username: str
+    user_type: enums.UserType
     team_id: Optional[int] = None
 
     class Config:
