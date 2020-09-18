@@ -71,7 +71,7 @@ def store_file(
 ):
     upload_file_loc = os.path.join(
         constants.UPLOAD_FILE_LOCATION,
-        filename,
+        filename
     )
 
     with open(upload_file_loc, "wb") as buffer:

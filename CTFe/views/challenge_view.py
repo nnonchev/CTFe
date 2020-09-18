@@ -135,6 +135,7 @@ def upload_file(
     background_task: BackgroundTasks,
     session: Session = Depends(dal.get_session),
 ) -> challenge_schemas.ChallengeDetails:
+    """ Upload file associated to a challenge record """
     conditions = and_(
         Challenge.id == id,
     )
@@ -172,6 +173,7 @@ def upload_file(
     background_task: BackgroundTasks,
     session: Session = Depends(dal.get_session),
 ) -> challenge_schemas.ChallengeDetails:
+    """ Remove uploaded file associated to a challenge record """
     conditions = and_(
         Challenge.id == id,
     )
