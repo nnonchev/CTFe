@@ -23,6 +23,7 @@ class Team(Base):
     attempts = relationship(
         "Attempt",
         back_populates="team",
+        cascade="all, delete-orphan",
     )
 
     def __repr__(self):

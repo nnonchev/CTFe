@@ -38,6 +38,7 @@ class Challenge(Base):
     attempts = relationship(
         "Attempt",
         back_populates="challenge",
+        cascade="all, delete-orphan",
     )
 
     def __repr__(self):
