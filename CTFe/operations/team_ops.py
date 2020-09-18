@@ -1,10 +1,15 @@
+from typing import List
+
 from sqlalchemy.orm import Session
 from sqlalchemy.sql.expression import (
     and_,
     BooleanClauseList,
 )
 
-from CTFe.models import Team
+from CTFe.models import (
+    Team,
+    User,
+)
 from CTFe.schemas import team_schemas
 
 
@@ -27,7 +32,7 @@ def read_team_by_(
     conditions: BooleanClauseList,
 ) -> Team:
     """ Query DB for a team based on multiple queries """
-    return session.query(Team).filter(conditions).first()
+    return session.query(Team).filter(conditions)
 
 
 def read_teams_by_(
@@ -63,6 +68,34 @@ def update_team(
         .update(team_data.dict())
     )
 
+    session.commit()
+    session.refresh(db_team)
+
+    return db_team
+
+
+def add_player(
+    session: Session,
+    db_team: Team,
+    player: User,
+) -> Team:
+    db_team.players.append(player)
+
+    session.add(db_team)
+    session.commit()
+    session.refresh(db_team)
+
+    return db_team
+
+
+def remove_player(
+    session: Session,
+    db_team: Team,
+    player: User,
+) -> Team:
+    db_team.players.remove(player)
+
+    session.add(db_team)
     session.commit()
     session.refresh(db_team)
 
