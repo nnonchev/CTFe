@@ -167,38 +167,16 @@ async def test_get_users__success():
 
 
 @pytest.mark.asyncio
-async def test_update_user__wrong_user_type():
+async def test_update_user__not_found():
     app.dependency_overrides[validators.validate_admin] = lambda: None
 
-    user_data = {
-        "username": "user1",
-        "password": "secret",
-    }
-
-    new_user_data = {
-        "user_type": "None"
-    }
-
-    db_user = User(**user_data)
-
-    with dal.get_session_ctx() as session:
-        session.add(db_user)
-        session.commit()
-        session.refresh(db_user)
+    user_data = {}
 
     async with AsyncClient(app=app, base_url=BASE_URL) as client:
-        response = await client.put(f"/users/{db_user.id}", json=new_user_data)
+        response = await client.put(f"/users/-1", json=user_data)
 
-    with dal.get_session_ctx() as session:
-        session.add(db_user)
-        session.refresh(db_user)
-
-    assert response.status_code == 401
-    assert response.json() == {"detail": "Wrong user_type value"}
-
-    with dal.get_session_ctx() as session:
-        session.delete(db_user)
-        session.commit()
+    assert response.status_code == 404
+    assert response.json() == {"detail": "User not found"}
 
     app.dependency_overrides = {}
 
