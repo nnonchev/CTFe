@@ -27,6 +27,7 @@ class ChallengeDetails(BaseModel):
     id: int
     name: str
     flag: str
+    file_name: Optional[str] = None
 
     class Config:
         orm_mode = True
