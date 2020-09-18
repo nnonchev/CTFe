@@ -1,11 +1,15 @@
+import os
+
 from sqlalchemy.orm import Session
 from sqlalchemy.sql.expression import (
     and_,
     BooleanClauseList,
 )
+from fastapi import UploadFile
 
 from CTFe.models import Challenge
 from CTFe.schemas import challenge_schemas
+from CTFe.config import constants
 
 
 def create_challenge(
@@ -59,6 +63,35 @@ def update_challenge(
     session.refresh(db_challenge)
 
     return db_challenge
+
+
+def store_file(
+    filename: str,
+    upload_file: UploadFile,
+):
+    upload_file_loc = os.path.join(
+        constants.UPLOAD_FILE_LOCATION,
+        filename,
+    )
+
+    with open(upload_file_loc, "wb") as buffer:
+        [
+            buffer.write(chunk)
+            for chunk in iter(
+                lambda: upload_file.file.read(constants.UPLOAD_FILE_SIZE), b''
+            )
+        ]
+
+
+def remove_file(
+    filename: str
+):
+    filepath = os.path.join(
+        constants.UPLOAD_FILE_LOCATION,
+        filename
+    )
+
+    os.remove(filepath)
 
 
 def delete_challenge(
