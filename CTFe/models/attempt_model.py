@@ -25,12 +25,6 @@ class Attempt(Base):
         back_populates="attempts",
     )
 
-    challenges = relationship(
-        "Challenge",
-        secondary=attempt_to_challenge_table,
-        back_populates="attempts",
-    )
-
     def __repr__(self):
         return f"<Attempt { self.id }>"
 
