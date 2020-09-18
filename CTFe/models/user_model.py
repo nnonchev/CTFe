@@ -19,7 +19,7 @@ class User(Base):
     )
     password = sa.Column(
         sa.String(),
-        nullable=True,
+        nullable=False,
     )
     user_type = sa.Column(
         sa.Enum(UserType),
