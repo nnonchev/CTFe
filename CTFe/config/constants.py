@@ -15,6 +15,11 @@ none_value_error = (
 # Application specific configs
 # -----------------------------
 MAX_TEAM_MEMBERS = 5
+UPLOAD_FILE_SIZE = 10_000
+UPLOAD_FILE_LOCATION = os.path.join(os.getcwd(), "uploaded_files")
+
+if not os.path.exists(UPLOAD_FILE_LOCATION):
+    os.makedirs(UPLOAD_FILE_LOCATION)
 
 
 # DB related configs
