@@ -1,7 +1,11 @@
-from typing import List, Optional
+from typing import (
+    List,
+    Optional,
+)
 
 from pydantic import BaseModel
 
+from CTFe.config.database import dal
 from CTFe.schemas import user_schemas
 
 
@@ -11,7 +15,6 @@ class TeamCreate(BaseModel):
 
 class TeamUpdate(BaseModel):
     name: Optional[str] = None
-    players: List[user_schemas.UserDetails] = None
 
     class Config:
         orm_mode = True
@@ -20,6 +23,9 @@ class TeamUpdate(BaseModel):
 class TeamDetails(BaseModel):
     id: int
     name: str
+    players: List[user_schemas.UserDetails] = None
 
     class Config:
         orm_mode = True
+
+        arbitrary_types_allowed = True

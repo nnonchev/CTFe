@@ -6,7 +6,7 @@ from pydantic import BaseModel
 class UserLogin(BaseModel):
     username: str
     password: str
- 
+
 
 class UserCreate(BaseModel):
     username: str
@@ -18,7 +18,7 @@ class UserUpdate(BaseModel):
     user_type: Optional[str] = None
 
     class Config:
-        orm_mode = True    
+        orm_mode = True
 
 
 class UserDetails(BaseModel):

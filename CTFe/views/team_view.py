@@ -14,9 +14,17 @@ from fastapi import (
 )
 
 from CTFe.config.database import dal
-from CTFe.models import Team
+from CTFe.models import (
+    Team,
+    User,
+)
 from CTFe.schemas import team_schemas
-from CTFe.operations import team_ops
+from CTFe.operations import (
+    team_ops,
+    user_ops,
+)
+from CTFe.utils import enums
+from CTFe.config import constants
 
 
 router = APIRouter()
