@@ -36,7 +36,7 @@ async def validate_admin(
         User.user_type == enums.UserType.ADMIN,
     )
 
-    db_user = user_ops.read_user_by_(session, conditions).first()
+    db_user = user_ops.read_users_by_(session, conditions).first()
 
     if db_user.user_type is None:
         raise HTTPException(

@@ -42,7 +42,7 @@ async def create_team(
     )
 
     # Check if a team record with the same unique fields already exists
-    if team_ops.read_team_by_(session, conditions).first():
+    if team_ops.read_teams_by_(session, conditions).first():
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail=f"The name: { team_create.name } is already taken"
@@ -64,7 +64,7 @@ async def get_team(
         Team.id == id,
     )
 
-    db_team = team_ops.read_team_by_(session, conditions).first()
+    db_team = team_ops.read_teams_by_(session, conditions).first()
 
     if db_team is None:
         raise HTTPException(
@@ -86,7 +86,7 @@ async def get_team_by_name(
         Team.name == name,
     )
 
-    db_team = team_ops.read_team_by_(session, conditions).first()
+    db_team = team_ops.read_teams_by_(session, conditions).first()
 
     if db_team is None:
         raise HTTPException(
@@ -118,7 +118,7 @@ async def update_team(
         Team.id == id,
     )
 
-    db_team = team_ops.read_team_by_(session, conditions).first()
+    db_team = team_ops.read_teams_by_(session, conditions).first()
 
     if db_team is None:
         raise HTTPException(
@@ -141,7 +141,7 @@ def add_player(
         Team.id == id,
     )
 
-    db_team = team_ops.read_team_by_(session, get_team_conditions).first()
+    db_team = team_ops.read_teams_by_(session, get_team_conditions).first()
 
     # Check if team exists
     if db_team is None:
@@ -161,7 +161,7 @@ def add_player(
         User.id == player_id
     )
 
-    db_player = user_ops.read_user_by_(session, get_player_conditions).first()
+    db_player = user_ops.read_users_by_(session, get_player_conditions).first()
 
     # Check if user exists
     if db_player is None:
@@ -200,7 +200,7 @@ def remove_player(
         Team.id == id,
     )
 
-    db_team = team_ops.read_team_by_(session, get_team_conditions).first()
+    db_team = team_ops.read_teams_by_(session, get_team_conditions).first()
 
     # Check if team exists
     if db_team is None:
@@ -213,7 +213,7 @@ def remove_player(
         User.id == player_id
     )
 
-    db_player = user_ops.read_user_by_(session, get_player_conditions).first()
+    db_player = user_ops.read_users_by_(session, get_player_conditions).first()
 
     # Check if user exists
     if db_player is None:
@@ -245,7 +245,7 @@ def delete_user(
         Team.id == id,
     )
 
-    db_team = team_ops.read_team_by_(session, conditions).first()
+    db_team = team_ops.read_teams_by_(session, conditions).first()
 
     if db_team is None:
         raise HTTPException(
