@@ -5,7 +5,6 @@ from typing import (
 
 from pydantic import BaseModel
 
-from CTFe.config.database import dal
 from CTFe.schemas import user_schemas
 
 
