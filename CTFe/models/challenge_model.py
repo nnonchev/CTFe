@@ -4,7 +4,6 @@ import sqlalchemy as sa
 from sqlalchemy.orm import relationship
 
 from CTFe.config.database import Base
-from CTFe.models.association_tables import attempt_to_challenge_table
 
 
 class Challenge(Base):
@@ -35,6 +34,10 @@ class Challenge(Base):
         sa.DateTime(),
         nullable=False,
         default=datetime.utcnow,
+    )
+    attempts = relationship(
+        "Attempt",
+        back_populates="challenge",
     )
 
     def __repr__(self):
