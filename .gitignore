@@ -1,5 +1,6 @@
 # vscode related
 .vscode/
+uploaded_files
 cli.py
 
 # Byte-compiled / optimized / DLL files
