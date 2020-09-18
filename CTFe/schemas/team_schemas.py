@@ -5,7 +5,6 @@ from typing import (
 
 from pydantic import BaseModel
 
-from CTFe.config.database import dal
 from CTFe.schemas import user_schemas
 
 
@@ -27,4 +26,3 @@ class TeamDetails(BaseModel):
 
     class Config:
         orm_mode = True
-        arbitrary_types_allowed = True

@@ -1,5 +1,3 @@
-from typing import List
-
 from sqlalchemy.orm import Session
 from sqlalchemy.sql.expression import (
     and_,
@@ -25,15 +23,7 @@ def create_team(
     session.refresh(db_team)
 
     return db_team
-
-
-def read_team_by_(
-    session: Session,
-    conditions: BooleanClauseList,
-) -> Team:
-    """ Query DB for a team based on multiple queries """
-    return session.query(Team).filter(conditions)
-
+    
 
 def read_teams_by_(
     session: Session,

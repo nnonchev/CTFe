@@ -44,7 +44,7 @@ async def user_info(
         User.id == user_payload.id,
     )
 
-    db_user = user_ops.read_user_by_(session, conditions).first()
+    db_user = user_ops.read_users_by_(session, conditions).first()
 
     if db_user is None:
         raise HTTPException(
@@ -70,7 +70,7 @@ async def register_user(
         User.username == user_create.username,
     )
 
-    if user_ops.read_user_by_(session, conditions).first():
+    if user_ops.read_users_by_(session, conditions).first():
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail=f"The username: { user_create.username } is already taken"
@@ -101,7 +101,7 @@ async def login_user(
         User.password == user_login.password,
     )
 
-    db_user = user_ops.read_user_by_(session, conditions).first()
+    db_user = user_ops.read_users_by_(session, conditions).first()
 
     if db_user is None:
         raise HTTPException(

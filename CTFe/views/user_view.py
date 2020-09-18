@@ -35,7 +35,7 @@ async def create_user(
     )
 
     # Check if a user record with the same unique fields already exists
-    if user_ops.read_user_by_(session, conditions).first():
+    if user_ops.read_users_by_(session, conditions).first():
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail=f"The username: { user_create.username } is already taken"
@@ -57,7 +57,7 @@ async def get_user(
         User.id == id,
     )
 
-    db_user = user_ops.read_user_by_(session, conditions).first()
+    db_user = user_ops.read_users_by_(session, conditions).first()
 
     if db_user is None:
         raise HTTPException(
@@ -79,7 +79,7 @@ async def get_user_by_username(
         User.username == username,
     )
 
-    db_user = user_ops.read_user_by_(session, conditions).first()
+    db_user = user_ops.read_users_by_(session, conditions).first()
 
     if db_user is None:
         raise HTTPException(
@@ -111,7 +111,7 @@ async def update_user(
         User.id == id,
     )
 
-    db_user = user_ops.read_user_by_(session, conditions).first()
+    db_user = user_ops.read_users_by_(session, conditions).first()
 
     if db_user is None:
         raise HTTPException(
@@ -134,7 +134,7 @@ def delete_user(
         User.id == id,
     )
 
-    db_user = user_ops.read_user_by_(session, conditions).first()
+    db_user = user_ops.read_users_by_(session, conditions).first()
 
     if db_user is None:
         raise HTTPException(

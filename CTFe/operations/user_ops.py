@@ -21,14 +21,6 @@ def create_user(
     return db_user
 
 
-def read_user_by_(
-    session: Session,
-    conditions: BooleanClauseList,
-) -> User:
-    """ Query DB for a user based on multiple queries """
-    return session.query(User).filter(conditions)
-
-
 def read_users_by_(
     session: Session,
     conditions: BooleanClauseList,
