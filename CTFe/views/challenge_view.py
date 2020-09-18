@@ -1,3 +1,4 @@
+from uuid import uuid4
 from typing import List
 
 from sqlalchemy import and_
@@ -8,6 +9,9 @@ from fastapi import (
     Cookie,
     status,
     HTTPException,
+    File,
+    UploadFile,
+    BackgroundTasks,
 )
 
 from CTFe.config.database import dal
@@ -120,6 +124,80 @@ async def update_challenge(
 
     db_challenge = challenge_ops.update_challenge(
         session, db_challenge, challenge_update)
+    return db_challenge
+
+
+@router.post("/{id}/upload-file", response_model=challenge_schemas.ChallengeDetails)
+def upload_file(
+    *,
+    id: int,
+    challenge_file: UploadFile = File(...),
+    background_task: BackgroundTasks,
+    session: Session = Depends(dal.get_session),
+) -> challenge_schemas.ChallengeDetails:
+    conditions = and_(
+        Challenge.id == id,
+    )
+
+    db_challenge = challenge_ops.read_challenges_by_(
+        session, conditions).first()
+
+    if db_challenge is None:
+        raise HTTPException(
+            status.HTTP_404_NOT_FOUND,
+            detail="Challenge not found"
+        )
+
+    if db_challenge.file_name is not None:
+        raise HTTPException(
+            status.HTTP_401_UNAUTHORIZED,
+            detail="There is already a file associated with this challenge"
+        )        
+
+    filename = uuid4().hex + f"_{ challenge_file.filename }"
+    background_task.add_task(challenge_ops.store_file,
+                             filename, challenge_file)
+
+    challenge_update = challenge_schemas.ChallengeUpdate(file_name=filename)
+    db_challenge = challenge_ops.update_challenge(
+        session, db_challenge, challenge_update)
+
+    return db_challenge
+
+
+@router.post("/{id}/remove-file", response_model=challenge_schemas.ChallengeDetails)
+def upload_file(
+    *,
+    id: int,
+    background_task: BackgroundTasks,
+    session: Session = Depends(dal.get_session),
+) -> challenge_schemas.ChallengeDetails:
+    conditions = and_(
+        Challenge.id == id,
+    )
+
+    db_challenge = challenge_ops.read_challenges_by_(
+        session, conditions).first()
+
+    if db_challenge is None:
+        raise HTTPException(
+            status.HTTP_404_NOT_FOUND,
+            detail="Challenge not found"
+        )
+
+    if db_challenge.file_name is None:
+        raise HTTPException(
+            status.HTTP_401_UNAUTHORIZED,
+            detail="There is no file for this challenge"
+        )        
+
+    filename = db_challenge.file_name
+    background_task.add_task(challenge_ops.remove_file, filename)
+
+    challenge_update = challenge_schemas.ChallengeUpdate(file_name=None)
+    db_challenge = challenge_ops.update_challenge(
+        session, db_challenge, challenge_update)
+
     return db_challenge
 
 
