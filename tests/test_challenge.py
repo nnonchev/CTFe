@@ -1,9 +1,13 @@
+import io
+import os
+
 import pytest
 from httpx import AsyncClient
 
 from CTFe.main import app
 from CTFe.models import Challenge
 from CTFe.schemas import challenge_schemas
+from CTFe.config import constants
 from . import (
     dal,
     BASE_URL,
@@ -127,7 +131,7 @@ async def test_get_challenge_by_name__not_found():
 
 
 @pytest.mark.asyncio
-async def test_get_challenge__success():
+async def test_get_challenge_by_name__success():
     challenge_data = {
         "name": "challenge1",
         "description": None,
@@ -157,7 +161,7 @@ async def test_get_challenge__success():
 
 
 @pytest.mark.asyncio
-async def test_get_challenges__success():
+async def test_get_all_challenges__success():
     async with AsyncClient(app=app, base_url=BASE_URL) as client:
         response = await client.get("/challenges/")
 
@@ -212,6 +216,213 @@ async def test_update_challenge__success():
 
     assert response.status_code == 200
     assert response.json() == challenge_details
+
+    with dal.get_session_ctx() as session:
+        session.delete(db_challenge)
+        session.commit()
+
+
+# Upload file tests
+# ------------------
+@pytest.mark.asyncio
+async def test_upload_file_challenge__not_found():
+    files = {
+        "challenge_file": (
+            "test_file.txt",
+            io.StringIO("Goodbye world"),
+        )
+    }
+
+    async with AsyncClient(app=app, base_url=BASE_URL) as client:
+        response = await client.post("/challenges/-1/upload-file", files=files)
+
+    assert response.status_code == 404
+    assert response.json() == {"detail": "Challenge not found"}
+
+
+@pytest.mark.asyncio
+async def test_upload_file_challenge__already_uploaded():
+    filename = "test_file.txt"
+
+    files = {
+        "challenge_file": (
+            filename,
+            io.StringIO("Goodbye world"),
+        )
+    }
+
+    challenge_data = {
+        "name": "challenge old",
+        "description": None,
+        "flag": "secret flag",
+        "file_name": filename,
+    }
+
+    db_challenge = Challenge(**challenge_data)
+
+    with dal.get_session_ctx() as session:
+        session.add(db_challenge)
+        session.commit()
+        session.refresh(db_challenge)
+
+    async with AsyncClient(app=app, base_url=BASE_URL) as client:
+        response = await client.post(f"/challenges/{db_challenge.id}/upload-file", files=files)
+
+    assert response.status_code == 401
+    assert response.json() == {
+        "detail": "There is already a file associated with this challenge"}
+
+    filepath = os.path.join(
+        constants.UPLOAD_FILE_LOCATION,
+        db_challenge.file_name
+    )
+    assert not os.path.isfile(filepath)
+
+    with dal.get_session_ctx() as session:
+        session.delete(db_challenge)
+        session.commit()
+
+
+@pytest.mark.asyncio
+async def test_upload_file_challenge__success():
+    challenge_data = {
+        "name": "challenge old",
+        "description": None,
+        "flag": "secret flag",
+        "file_name": None,
+    }
+
+    db_challenge = Challenge(**challenge_data)
+
+    with dal.get_session_ctx() as session:
+        session.add(db_challenge)
+        session.commit()
+        session.refresh(db_challenge)
+
+    files = {
+        "challenge_file": (
+            "test_file.txt",
+            io.StringIO("Goodbye world"),
+        )
+    }
+
+    async with AsyncClient(app=app, base_url=BASE_URL) as client:
+        response = await client.post(f"/challenges/{db_challenge.id}/upload-file", files=files)
+
+    with dal.get_session_ctx() as session:
+        session.add(db_challenge)
+        session.refresh(db_challenge)
+
+        challenge_update = challenge_schemas.ChallengeDetails.from_orm(
+            db_challenge)
+
+    assert response.status_code == 200
+    assert response.json() == challenge_update
+
+    filepath = os.path.join(
+        constants.UPLOAD_FILE_LOCATION,
+        challenge_update.file_name
+    )
+
+    assert os.path.isfile(filepath)
+
+    os.remove(filepath)
+
+    with dal.get_session_ctx() as session:
+        session.delete(db_challenge)
+        session.commit()
+
+
+# Remove uploaded file tests
+# ---------------------------
+@pytest.mark.asyncio
+async def test_remove_uploaded_file_challenge__not_found():
+    files = {
+        "challenge_file": (
+            "test_file.txt",
+            io.StringIO("Goodbye world"),
+        )
+    }
+
+    async with AsyncClient(app=app, base_url=BASE_URL) as client:
+        response = await client.post("/challenges/-1/remove-file", files=files)
+
+    assert response.status_code == 404
+    assert response.json() == {"detail": "Challenge not found"}
+
+
+@pytest.mark.asyncio
+async def test_remove_uploaded_file_challenge__remove_null_file():
+    files = {
+        "challenge_file": (
+            "test_file.txt",
+            io.StringIO("Goodbye world"),
+        )
+    }
+
+    challenge_data = {
+        "name": "challenge old",
+        "description": None,
+        "flag": "secret flag",
+        "file_name": None,
+    }
+
+    db_challenge = Challenge(**challenge_data)
+
+    with dal.get_session_ctx() as session:
+        session.add(db_challenge)
+        session.commit()
+        session.refresh(db_challenge)
+
+    async with AsyncClient(app=app, base_url=BASE_URL) as client:
+        response = await client.post(f"/challenges/{db_challenge.id}/remove-file", files=files)
+
+    assert response.status_code == 401
+    assert response.json() == {
+        "detail": "There is no file for this challenge"}
+
+    with dal.get_session_ctx() as session:
+        session.delete(db_challenge)
+        session.commit()
+
+
+@pytest.mark.asyncio
+async def test_remove_uploaded_file_challenge__success():
+    challenge_data = {
+        "name": "challenge old",
+        "description": None,
+        "flag": "secret flag",
+        "file_name": "test_file.txt",
+    }
+
+    db_challenge = Challenge(**challenge_data)
+
+    with dal.get_session_ctx() as session:
+        session.add(db_challenge)
+        session.commit()
+        session.refresh(db_challenge)
+
+    filepath = os.path.join(
+        constants.UPLOAD_FILE_LOCATION,
+        db_challenge.file_name
+    )
+
+    open(filepath, "w").close()
+
+    async with AsyncClient(app=app, base_url=BASE_URL) as client:
+        response = await client.post(f"/challenges/{db_challenge.id}/remove-file")
+
+    with dal.get_session_ctx() as session:
+        session.add(db_challenge)
+        session.refresh(db_challenge)
+
+        challenge_update = challenge_schemas.ChallengeDetails.from_orm(
+            db_challenge)
+
+    assert response.status_code == 200
+    assert response.json() == challenge_update
+
+    assert not os.path.isfile(filepath)
 
     with dal.get_session_ctx() as session:
         session.delete(db_challenge)

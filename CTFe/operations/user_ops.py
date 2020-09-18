@@ -1,8 +1,5 @@
 from sqlalchemy.orm import Session
-from sqlalchemy.sql.expression import (
-    and_,
-    BooleanClauseList,
-)
+from sqlalchemy.sql.expression import BooleanClauseList
 
 from CTFe.models import User
 from CTFe.schemas import user_schemas
@@ -25,7 +22,7 @@ def read_users_by_(
     session: Session,
     conditions: BooleanClauseList,
 ) -> User:
-    """ Query DB for a user based on multiple queries """
+    """ Query DB for user records based on multiple queries """
     return session.query(User).filter(conditions)
 
 

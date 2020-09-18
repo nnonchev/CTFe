@@ -29,7 +29,7 @@ def read_teams_by_(
     session: Session,
     conditions: BooleanClauseList,
 ) -> Team:
-    """ Query DB for a team based on multiple queries """
+    """ Query DB for team records based on multiple queries """
     return session.query(Team).filter(conditions)
 
 

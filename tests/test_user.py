@@ -129,7 +129,7 @@ async def test_get_user_by_username__not_found():
 
 
 @pytest.mark.asyncio
-async def test_get_user__success():
+async def test_get_user_by_username__success():
     app.dependency_overrides[validators.validate_admin] = lambda: None
 
     user_data = {
@@ -158,7 +158,7 @@ async def test_get_user__success():
 
 
 @pytest.mark.asyncio
-async def test_get_users__success():
+async def test_get_all_users__success():
     app.dependency_overrides[validators.validate_admin] = lambda: None
 
     async with AsyncClient(app=app, base_url=BASE_URL) as client:

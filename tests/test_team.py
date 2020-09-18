@@ -112,7 +112,7 @@ async def test_get_team_by_name__not_found():
 
 
 @pytest.mark.asyncio
-async def test_get_team__success():
+async def test_get_team_by_bane__success():
     team_data = {
         "name": "team1",
     }
@@ -137,7 +137,7 @@ async def test_get_team__success():
 
 
 @pytest.mark.asyncio
-async def test_get_teams__success():
+async def test_get_all_teams__success():
     async with AsyncClient(app=app, base_url=BASE_URL) as client:
         response = await client.get("/teams/")
 

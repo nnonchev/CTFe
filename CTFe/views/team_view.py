@@ -232,7 +232,7 @@ def remove_player(
 
 
 @router.delete("/{id}", status_code=204)
-def delete_user(
+def delete_team(
     *,
     id: int,
     session: Session = Depends(dal.get_session)

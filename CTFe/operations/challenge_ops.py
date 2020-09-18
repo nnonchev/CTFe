@@ -1,10 +1,7 @@
 import os
 
 from sqlalchemy.orm import Session
-from sqlalchemy.sql.expression import (
-    and_,
-    BooleanClauseList,
-)
+from sqlalchemy.sql.expression import BooleanClauseList
 from fastapi import UploadFile
 
 from CTFe.models import Challenge
@@ -30,7 +27,7 @@ def read_challenges_by_(
     session: Session,
     conditions: BooleanClauseList,
 ) -> Challenge:
-    """ Query DB for a challenge based on multiple queries """
+    """ Query DB for challenge records based on multiple queries """
     return session.query(Challenge).filter(conditions)
 
 
