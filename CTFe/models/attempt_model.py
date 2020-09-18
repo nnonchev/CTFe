@@ -34,6 +34,7 @@ class Attempt(Base):
     def __repr__(self):
         return f"<Attempt { self.id }>"
 
-    def __init__(self, flag, team_id):
+    def __init__(self, flag, team_id, challenge):
         self.flag = flag
         self.team_id = team_id
+        self.challenges.append(challenge)

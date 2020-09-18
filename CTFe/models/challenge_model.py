@@ -37,12 +37,6 @@ class Challenge(Base):
         default=datetime.utcnow,
     )
 
-    attempts = relationship(
-        "Attempt",
-        secondary=attempt_to_challenge_table,
-        back_populates="challenges"
-    )
-
     def __repr__(self):
         return f"<Challenge { self.id }>"
 
