@@ -87,11 +87,13 @@ async def test_get_team__success():
         session.commit()
         session.refresh(db_team)
 
+        team_details = team_schemas.TeamDetails.from_orm(db_team)
+
     async with AsyncClient(app=app, base_url=BASE_URL) as client:
         response = await client.get(f"/teams/{db_team.id}")
 
     assert response.status_code == 200
-    assert response.json() == team_schemas.TeamDetails.from_orm(db_team)
+    assert response.json() == team_details
 
     with dal.get_session_ctx() as session:
         session.delete(db_team)
@@ -158,19 +160,6 @@ async def test_update_team__not_found():
 
 @pytest.mark.asyncio
 async def test_update_team__success():
-    user_data = {}
-
-    async with AsyncClient(app=app, base_url=BASE_URL) as client:
-        response = await client.put(f"/users/-1", json=user_data)
-
-    assert response.status_code == 404
-    assert response.json() == {"detail": "User not found"}
-
-    app.dependency_overrides = {}
-
-
-@pytest.mark.asyncio
-async def test_update_team__success():
     team_data = {
         "name": "team old",
     }
@@ -195,6 +184,8 @@ async def test_update_team__success():
 
         team_details = team_schemas.TeamDetails.from_orm(db_team)
 
+        team_details = team_details
+
     assert response.status_code == 200
     assert response.json() == team_details
 
@@ -203,6 +194,8 @@ async def test_update_team__success():
         session.commit()
 
 
+# Add players to team tests
+# --------------------------
 @pytest.mark.asyncio
 async def test_update_add_player_to_team__team_not_found():
     async with AsyncClient(app=app, base_url=BASE_URL) as client:
@@ -212,8 +205,6 @@ async def test_update_add_player_to_team__team_not_found():
     assert response.json() == {"detail": "Team not found"}
 
 
-# Add players to team tests
-# --------------------------
 @pytest.mark.asyncio
 async def test_add_player_to_team__team_not_found():
     async with AsyncClient(app=app, base_url=BASE_URL) as client:

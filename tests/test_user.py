@@ -188,7 +188,7 @@ async def test_update_user__not_found():
 
 
 @pytest.mark.asyncio
-async def test_update_user__success():
+async def test_update_user__success2():
     app.dependency_overrides[validators.validate_admin] = lambda: None
 
     user_data = {
