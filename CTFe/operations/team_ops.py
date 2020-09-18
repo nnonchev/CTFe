@@ -1,5 +1,3 @@
-from typing import List
-
 from sqlalchemy.orm import Session
 from sqlalchemy.sql.expression import (
     and_,
