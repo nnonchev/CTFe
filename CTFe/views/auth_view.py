@@ -1,69 +1,60 @@
-from typing import Optional
-
 from sqlalchemy import and_
 from sqlalchemy.orm import Session
 from fastapi import (
     APIRouter,
     Depends,
-    Response,
-    Cookie,
     status,
     HTTPException,
+)
+from fastapi.security import (
+    OAuth2PasswordRequestForm,
 )
 
 from CTFe.config.database import dal
 from CTFe.models import User
 from CTFe.schemas import user_schemas
-from CTFe.operations import user_ops
-from CTFe.utils import redis_utils
-from CTFe.utils.redis_utils import redis_dal
+from CTFe.operations import (
+    auth_ops,
+    user_ops,
+)
 
 
 router = APIRouter()
 
 
-@router.get(
-    "/me",
-    response_model=user_schemas.UserDetails,
-)
-async def user_info(
-    *,
-    token: Optional[str] = Cookie(None),
+@router.post("/token")
+async def login(
+    form_data: OAuth2PasswordRequestForm = Depends(),
     session: Session = Depends(dal.get_session),
-) -> user_schemas.UserDetails:
-    """ Get information on the currently logged in user """
-    if token is None:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="You are not logged in",
-        )
-
-    user_payload = await redis_utils.retrieve_payload(token, redis_dal)
-
+):
     conditions = and_(
-        User.id == user_payload.id,
+        User.username == form_data.username,
     )
 
     db_user = user_ops.read_users_by_(session, conditions).first()
 
-    if db_user is None:
+    if (
+        (db_user is None) or
+        (not auth_ops.verify_password(form_data.password, db_user.password))
+    ):
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="User not found"
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Incorrect username or password",
         )
 
-    return db_user
+    token = auth_ops.create_access_token(id=db_user.id)
+
+    return {
+        "token": token,
+        "token_type": "bearer",
+    }
 
 
-@router.post(
-    "/register",
-    response_model=user_schemas.UserDetails,
-)
-async def register_user(
+@router.post("/register")
+async def register(
     *,
     user_create: user_schemas.UserCreate,
     session: Session = Depends(dal.get_session),
-    response: Response,
 ):
     """ Check if user with username already exists """
     conditions = and_(
@@ -76,45 +67,16 @@ async def register_user(
             detail=f"The username: { user_create.username } is already taken"
         )
 
+    user_create.password = auth_ops.hash_password(user_create.password)
+
     db_user = user_ops.create_user(session, user_create)
 
-    user_payload = user_schemas.UserRedisPayload.from_orm(db_user)
-    token = await redis_utils.store_payload(user_payload, redis_dal)
+    token = auth_ops.create_access_token(id=db_user.id)
 
-    response.set_cookie(key="token", value=token)
-
-    return db_user
-
-
-@router.post(
-    "/login",
-    response_model=user_schemas.UserDetails,
-)
-async def login_user(
-    *,
-    user_login: user_schemas.UserLogin,
-    session: Session = Depends(dal.get_session),
-    response: Response,
-):
-    conditions = and_(
-        User.username == user_login.username,
-        User.password == user_login.password,
-    )
-
-    db_user = user_ops.read_users_by_(session, conditions).first()
-
-    if db_user is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="User not found"
-        )
-
-    user_payload = user_schemas.UserRedisPayload.from_orm(db_user)
-    token = await redis_utils.store_payload(user_payload, redis_dal)
-
-    response.set_cookie(key="token", value=token)
-
-    return db_user
+    return {
+        "token": token,
+        "token_type": "bearer",
+    }
 
 
 @router.post(
@@ -122,17 +84,19 @@ async def login_user(
     status_code=204,
 )
 async def logout_user(
-    *,
-    token: Optional[str] = Cookie(None),
-    response: Response,
+    token: str = Depends(auth_ops.oauth2_scheme),
 ):
     if token is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="You are not logged in",
         )
+    
 
-    user_payload = await redis_utils.retrieve_payload(token, redis_dal)
-    await redis_utils.delete_key(user_payload.id, redis_dal)
 
-    response.delete_cookie("token")
+@router.get("/me")
+def auth_test(
+    user_details: user_schemas.UserDetails = Depends(
+        auth_ops.get_current_user),
+):
+    return {"user_details": user_details}
