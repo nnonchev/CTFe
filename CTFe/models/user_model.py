@@ -1,8 +1,12 @@
 import sqlalchemy as sa
 from sqlalchemy.orm import relationship
+from sqlalchemy.ext.hybrid import hybrid_property
 
 from CTFe.config.database import Base
-from CTFe.utils.enums import UserType
+from CTFe.utils import (
+    enums,
+    pwd_utils,
+)
 
 
 class User(Base):
@@ -17,14 +21,14 @@ class User(Base):
         unique=True,
         nullable=False,
     )
-    password = sa.Column(
+    _password = sa.Column(
         sa.String(),
         nullable=False,
     )
     user_type = sa.Column(
-        sa.Enum(UserType),
+        sa.Enum(enums.UserType),
         nullable=False,
-        server_default=UserType.PLAYER.name,
+        server_default=enums.UserType.PLAYER.name,
     )
     team_id = sa.Column(
         sa.Integer(),
@@ -41,3 +45,11 @@ class User(Base):
     def __init__(self, username, password):
         self.username = username
         self.password = password
+
+    @hybrid_property
+    def password(self):
+        return self._password
+
+    @password.setter
+    def password(self, plain_password: str):
+        self._password = pwd_utils.hash_password(plain_password)
