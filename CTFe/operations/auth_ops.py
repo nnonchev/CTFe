@@ -19,10 +19,7 @@ from jose import (
 from CTFe.models import User
 from CTFe.schemas import user_schemas
 from CTFe.operations import user_ops
-from CTFe.utils import (
-    jwt_utils,
-    pwd_utils,
-)
+from CTFe.utils import jwt_utils
 from CTFe.config import constants
 from CTFe.config.database import dal
 

@@ -1,7 +1,9 @@
+from sqlalchemy import and_
 from sqlalchemy.orm import Session
 from sqlalchemy.sql.expression import BooleanClauseList
 
 from CTFe.models import User
+from CTFe.operations import user_ops
 from CTFe.utils import enums
 
 
@@ -14,4 +16,5 @@ def read_players_by_(
         User.user_type == enums.UserType.PLAYER,
         conditions,
     )
-    return session.query(User).filter(conditions)
+
+    return user_ops.read_users_by_(session, conditions)

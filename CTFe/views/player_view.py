@@ -75,10 +75,12 @@ async def get_all_players(
     session: Session = Depends(dal.get_session)
 ) -> List[player_schemas.PlayerDetails]:
     """ Retreive multiple players records from DB """
-    db_users = user_ops.read_users_by_(session, and_())
-    return db_users.all()
+    db_players = player_ops.read_players_by_(session, and_()).all()
+
+    return db_players
 
 
+# TODO Password is saved as plain text :/
 @router.put("/", response_model=player_schemas.PlayerDetails)
 async def update_player(
     *,
@@ -98,23 +100,17 @@ async def update_player(
     return db_user
 
 
-@router.delete("/{id}", status_code=204)
-def delete_user(
+@router.delete("/", status_code=204)
+def delete_player(
     *,
-    id: int,
+    db_user: User = Depends(auth_ops.get_current_user),
     session: Session = Depends(dal.get_session)
 ):
     """ Delete a user record from DB """
-    conditions = and_(
-        User.id == id,
-    )
-
-    db_user = user_ops.read_users_by_(session, conditions).first()
-
     if db_user is None:
         raise HTTPException(
             status.HTTP_404_NOT_FOUND,
-            detail="User not found"
+            detail="Player not found"
         )
 
     """ Delete user record from DB """
