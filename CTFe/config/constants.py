@@ -81,7 +81,7 @@ if REDIS_DB_NAME is None:
 # --------------------
 JWT_ALGORITHM = "HS256"
 JWT_SECRET = os.getenv("JWT_SECRET")
-JWT_EXPIRE_TIME = 15    # It's in minutes (e.g. 15 => 15 minutes)
+JWT_EXPIRE_TIME = 1    # It's in minutes (e.g. 15 => 15 minutes)
 
 if JWT_SECRET is None:
     raise none_value_error("JWT_SECRET")

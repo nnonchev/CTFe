@@ -9,6 +9,8 @@ from CTFe.views import (
     auth_router,
     user_router,
     team_router,
+    challenge_router,
+    attempt_router,
 )
 
 
@@ -20,13 +22,18 @@ app.include_router(
 app.include_router(
     user_router,
     prefix="/users",
-    dependencies=[
-        Depends(validators.validate_admin),
-    ]
 )
 app.include_router(
     team_router,
     prefix="/teams",
+)
+app.include_router(
+    challenge_router,
+    prefix="/challenges",
+)
+app.include_router(
+    attempt_router,
+    prefix="/attempts",
 )
 
 

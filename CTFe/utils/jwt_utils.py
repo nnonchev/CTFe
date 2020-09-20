@@ -18,12 +18,16 @@ def encode(payload):
     )
 
 
-def decode(token):
+def decode(token: str):
+    return jwt.decode(
+        token,
+        constants.JWT_SECRET,
+        algorithms=[constants.JWT_ALGORITHM],
+    )
     try:
         payload = jwt.decode(
             token,
-            constants.JWT_SECRET,
-            algorithms=[constants.JWT_ALGORITHM],
+
         )
     except ExpiredSignatureError:
         raise HTTPException(
