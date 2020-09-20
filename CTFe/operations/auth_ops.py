@@ -1,7 +1,6 @@
 from datetime import datetime, timedelta
 from typing import Optional
 
-from passlib.context import CryptContext
 from sqlalchemy import and_
 from sqlalchemy.orm import Session
 from fastapi import (
@@ -20,25 +19,15 @@ from jose import (
 from CTFe.models import User
 from CTFe.schemas import user_schemas
 from CTFe.operations import user_ops
-from CTFe.utils import jwt_utils
+from CTFe.utils import (
+    jwt_utils,
+    pwd_utils,
+)
 from CTFe.config import constants
 from CTFe.config.database import dal
 
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
-
-pwd_ctx = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
-
-def verify_password(
-    plain_password: str,
-    hashed_password: str,
-) -> bool:
-    return pwd_ctx.verify(plain_password, hashed_password)
-
-
-def hash_password(plain_password):
-    return pwd_ctx.hash(plain_password)
 
 
 def create_access_token(
@@ -92,13 +81,7 @@ def get_current_user(
 
     db_user = user_ops.read_users_by_(session, conditions).first()
 
-    if db_user is None:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid authentication credentials",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
+    if not db_user:
+        raise credentials_exception
 
-    user_details = user_schemas.UserDetails.from_orm(db_user)
-
-    return user_details
+    return db_user

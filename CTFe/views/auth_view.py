@@ -17,6 +17,7 @@ from CTFe.operations import (
     auth_ops,
     user_ops,
 )
+from CTFe.utils import pwd_utils
 
 
 router = APIRouter()
@@ -35,7 +36,7 @@ async def login(
 
     if (
         (db_user is None) or
-        (not auth_ops.verify_password(form_data.password, db_user.password))
+        (not pwd_utils.verify_password(form_data.password, db_user.password))
     ):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -67,8 +68,6 @@ async def register(
             detail=f"The username: { user_create.username } is already taken"
         )
 
-    user_create.password = auth_ops.hash_password(user_create.password)
-
     db_user = user_ops.create_user(session, user_create)
 
     token = auth_ops.create_access_token(id=db_user.id)
@@ -91,12 +90,14 @@ async def logout_user(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="You are not logged in",
         )
-    
 
 
-@router.get("/me")
+@router.get(
+    "/me",
+    response_model=user_schemas.UserDetails,
+)
 def auth_test(
-    user_details: user_schemas.UserDetails = Depends(
+    db_user: User = Depends(
         auth_ops.get_current_user),
 ):
-    return {"user_details": user_details}
+    return db_user
