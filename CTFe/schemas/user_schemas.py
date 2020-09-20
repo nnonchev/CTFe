@@ -5,17 +5,30 @@ from pydantic import (
     validator,
 )
 
-from CTFe.utils import enums
+from CTFe.utils import (
+    enums,
+    pwd_utils,
+)
 
 
 class UserLogin(BaseModel):
     username: str
     password: str
 
+    # TODO Fix retarded solution
+    @validator("password")
+    def ensure_hashed_password(cls, v):
+        return pwd_utils.hash_password(v)
+
 
 class UserCreate(BaseModel):
     username: str
     password: str
+
+    # TODO FIX RETARDED SOLUTION
+    @validator("password")
+    def ensure_hashed_password(cls, v):
+        return pwd_utils.hash_password(v)
 
 
 class UserUpdate(BaseModel):
@@ -24,6 +37,12 @@ class UserUpdate(BaseModel):
 
     class Config:
         orm_mode = True
+
+    # TODO FIX RETARDED SOLUTION!!!
+    @validator("password")
+    def ensure_hashed_password(cls, v):
+        if v is not None:
+            return pwd_utils.hash_password(v)
 
     @validator("user_type")
     def validate_user_type(cls, v):
