@@ -1,3 +1,5 @@
+from typing import Any
+
 from sqlalchemy.orm import Session
 from sqlalchemy.sql.expression import BooleanClauseList
 
@@ -29,7 +31,7 @@ def read_users_by_(
 def update_user(
     session: Session,
     db_user: User,
-    user_update: user_schemas.UserUpdate,
+    user_update: Any,
 ) -> User:
     """ Update user record in DB """
 
