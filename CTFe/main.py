@@ -8,6 +8,7 @@ from CTFe.utils import validators
 from CTFe.views import (
     auth_router,
     user_router,
+    player_router,
     team_router,
     challenge_router,
     attempt_router,
@@ -22,6 +23,10 @@ app.include_router(
 app.include_router(
     user_router,
     prefix="/users",
+)
+app.include_router(
+    player_router,
+    prefix="/players",
 )
 app.include_router(
     team_router,
