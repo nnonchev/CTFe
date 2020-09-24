@@ -5,12 +5,18 @@ from sqlalchemy.sql.expression import BooleanClauseList
 
 from CTFe.models import User
 from CTFe.schemas import user_schemas
+from CTFe.utils import pwd_utils
 
 
 def create_user(
     session: Session,
     user_create: user_schemas.UserCreate,
 ) -> User:
+    
+    # TODO Find a better solution
+    # Hash password
+    user_create.password = pwd_utils.hash_password(user_create.password)
+
     db_user = User(**user_create.dict())
 
     session.add(db_user)
@@ -34,6 +40,11 @@ def update_user(
     user_update: Any,
 ) -> User:
     """ Update user record in DB """
+
+    if user_update.password is not None:
+        # TODO Find a better solution
+        # Hash password
+        user_update.password = pwd_utils.hash_password(user_update.password)
 
     # Cast to UserUpdate pydantic model
     user_updated = (
