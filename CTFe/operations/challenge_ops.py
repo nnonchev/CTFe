@@ -4,7 +4,10 @@ from sqlalchemy.orm import Session
 from sqlalchemy.sql.expression import BooleanClauseList
 from fastapi import UploadFile
 
-from CTFe.models import Challenge
+from CTFe.models import (
+    Challenge,
+    User,
+)
 from CTFe.schemas import challenge_schemas
 from CTFe.config import constants
 
@@ -12,9 +15,11 @@ from CTFe.config import constants
 def create_challenge(
     session: Session,
     challenge_create: challenge_schemas.ChallengeCreate,
+    db_user: User,
 ) -> Challenge:
     """ Insert a challenge record in DB """
     db_challenge = Challenge(**challenge_create.dict())
+    db_challenge.owner = db_user
 
     session.add(db_challenge)
     session.commit()

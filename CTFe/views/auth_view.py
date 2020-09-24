@@ -97,7 +97,6 @@ async def logout_user(
     response_model=user_schemas.UserDetails,
 )
 def auth_test(
-    db_user: User = Depends(
-        auth_ops.get_current_user),
-):
+    db_user: User = Depends(auth_ops.get_current_user),
+) -> User:
     return db_user

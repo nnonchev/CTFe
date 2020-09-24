@@ -26,8 +26,10 @@ class ChallengeUpdate(BaseModel):
 class ChallengeDetails(BaseModel):
     id: int
     name: str
+    description: str
     flag: str
     file_name: Optional[str] = None
+    owner_id: int
 
     class Config:
         orm_mode = True
