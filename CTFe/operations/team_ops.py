@@ -14,9 +14,11 @@ from CTFe.schemas import team_schemas
 def create_team(
     session: Session,
     team_create: team_schemas.TeamCreate,
+    db_user: User,
 ) -> Team:
     """ Insert a team record in DB """
     db_team = Team(**team_create.dict())
+    db_team.players.append(db_user)
 
     session.add(db_team)
     session.commit()

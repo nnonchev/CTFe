@@ -19,6 +19,7 @@ from CTFe.schemas import team_schemas
 from CTFe.operations import (
     team_ops,
     user_ops,
+    auth_ops,
 )
 from CTFe.utils import enums
 from CTFe.config import constants
@@ -31,9 +32,25 @@ router = APIRouter()
 async def create_team(
     *,
     team_create: team_schemas.TeamCreate,
+    db_user: User = Depends(auth_ops.get_current_user),
     session: Session = Depends(dal.get_session),
 ) -> team_schemas.TeamDetails:
     """ Create new team DB record """
+
+    # Check if user is of user_type player
+    if db_user.user_type != enums.UserType.PLAYER:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=f"Only players can create teams",
+        )
+
+    # Check if user hasn't already joined another team
+    if db_user.team is not None:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You are already part of a team",
+        )
+
     conditions = and_(
         Team.name == team_create.name,
     )
@@ -45,7 +62,7 @@ async def create_team(
             detail=f"The name: { team_create.name } is already taken"
         )
 
-    db_team = team_ops.create_team(session, team_create)
+    db_team = team_ops.create_team(session, team_create, db_user)
 
     return db_team
 
