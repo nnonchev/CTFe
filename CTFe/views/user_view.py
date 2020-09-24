@@ -17,7 +17,10 @@ from CTFe.config.database import dal
 from CTFe.models import User
 from CTFe.schemas import user_schemas
 from CTFe.operations import user_ops
-from CTFe.utils import enums
+from CTFe.utils import (
+    enums,
+    pwd_utils,
+)
 
 
 router = APIRouter()
@@ -40,6 +43,10 @@ async def create_user(
             status_code=status.HTTP_409_CONFLICT,
             detail=f"The username: { user_create.username } is already taken"
         )
+
+    # TODO Find a better solution
+    # Hash password
+    user_create.password = pwd_utils.hash_password(user_create.password)
 
     db_user = user_ops.create_user(session, user_create)
 
@@ -119,7 +126,13 @@ async def update_user(
             detail="User not found"
         )
 
+    if user_update.password is not None:
+        # TODO Find a better solution
+        # Hash password
+        user_update.password = pwd_utils.hash_password(user_update.password)
+
     db_user = user_ops.update_user(session, db_user, user_update)
+
     return db_user
 
 

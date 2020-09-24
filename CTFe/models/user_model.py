@@ -1,12 +1,10 @@
 import sqlalchemy as sa
+from sqlalchemy import event
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.hybrid import hybrid_property
 
 from CTFe.config.database import Base
-from CTFe.utils import (
-    enums,
-    pwd_utils,
-)
+from CTFe.utils import enums
 
 
 class User(Base):
@@ -21,7 +19,7 @@ class User(Base):
         unique=True,
         nullable=False,
     )
-    _password = sa.Column(
+    password = sa.Column(
         sa.String(),
         nullable=False,
     )
@@ -45,11 +43,3 @@ class User(Base):
     def __init__(self, username, password):
         self.username = username
         self.password = password
-
-    @hybrid_property
-    def password(self):
-        return self._password
-
-    @password.setter
-    def password(self, plain_password: str):
-        self._password = pwd_utils.hash_password(plain_password)
