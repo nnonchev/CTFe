@@ -15,9 +15,18 @@ from fastapi import (
 )
 
 from CTFe.config.database import dal
-from CTFe.models import Challenge
+from CTFe.models import (
+    Challenge,
+    User,
+)
 from CTFe.schemas import challenge_schemas
-from CTFe.operations import challenge_ops
+from CTFe.operations import (
+    challenge_ops,
+    auth_ops,
+)
+from CTFe.utils import (
+    enums,
+)
 
 
 router = APIRouter()
@@ -27,12 +36,20 @@ router = APIRouter()
 async def create_challenge(
     *,
     challenge_create: challenge_schemas.ChallengeCreate,
+    db_user: User = Depends(auth_ops.get_current_user),
     session: Session = Depends(dal.get_session),
 ) -> challenge_schemas.ChallengeDetails:
     """ Create new challenge DB record """
     conditions = and_(
         Challenge.name == challenge_create.name,
     )
+
+    # Check if the current user is a contributor
+    if db_user.user_type != enums.UserType.CONTRIBUTOR:
+        raise HTTPException(
+            status.HTTP_403_FORBIDDEN,
+            detail="Only contributors can create challenges"
+        )
 
     # Check if a challenge record with the same unique fields already exists
     if challenge_ops.read_challenges_by_(session, conditions).first():
@@ -41,7 +58,7 @@ async def create_challenge(
             detail=f"The name: { challenge_create.name } is already taken"
         )
 
-    db_challenge = challenge_ops.create_challenge(session, challenge_create)
+    db_challenge = challenge_ops.create_challenge(session, challenge_create, db_user)
 
     return db_challenge
 
@@ -106,11 +123,21 @@ async def update_challenge(
     *,
     id: int,
     challenge_update: challenge_schemas.ChallengeUpdate,
+    db_user: User = Depends(auth_ops.get_current_user),
     session: Session = Depends(dal.get_session)
 ) -> challenge_schemas.ChallengeDetails:
     """ Update a challenge record from DB """
+    
+    # Check if the current user is a contributor
+    if db_user.user_type != enums.UserType.CONTRIBUTOR:
+        raise HTTPException(
+            status.HTTP_403_FORBIDDEN,
+            detail="Only contributors can create challenges"
+        )
+
     conditions = and_(
         Challenge.id == id,
+        Challenge.owner_id == db_user.id,
     )
 
     db_challenge = challenge_ops.read_challenges_by_(
