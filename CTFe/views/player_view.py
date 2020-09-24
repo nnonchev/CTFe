@@ -21,6 +21,9 @@ from CTFe.operations import (
     auth_ops,
     user_ops,
 )
+from CTFe.utils import (
+    enums,
+)
 
 
 router = APIRouter()
@@ -80,7 +83,6 @@ async def get_all_players(
     return db_players
 
 
-# TODO Password is saved as plain text :/
 @router.put("/", response_model=player_schemas.PlayerDetails)
 async def update_player(
     *,
@@ -96,6 +98,33 @@ async def update_player(
         )
 
     db_user = user_ops.update_user(session, db_user, player_update)
+
+    return db_user
+
+
+@router.patch("/quit-team", response_model=player_schemas.PlayerDetails)
+def quit_team(
+    *,
+    db_user: User = Depends(auth_ops.get_current_user),
+    session: Session = Depends(dal.get_session),
+) -> player_schemas.PlayerDetails:
+    """ Remove current player from team """
+
+    # Check if user is of user_type player
+    if not db_user.user_type == enums.UserType.PLAYER:
+        raise HTTPException(
+            status.HTTP_403_FORBIDDEN,
+            detail="Only players can quit a team"
+        )
+
+    # Check if current user is part of a team
+    if db_user.team == None:
+        raise HTTPException(
+            status.HTTP_403_FORBIDDEN,
+            detail="You are not part of any team"
+        )
+
+    db_user = player_ops.quit_team(db_user, session)
 
     return db_user
 

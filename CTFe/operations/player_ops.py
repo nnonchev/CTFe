@@ -18,3 +18,21 @@ def read_players_by_(
     )
 
     return user_ops.read_users_by_(session, conditions)
+
+
+def quit_team(
+    db_user: User,
+    session: Session,
+) -> User:
+    """ Remove current team from player """
+    team = db_user.team
+    
+
+    db_user.team = None
+
+    session.add(db_user)
+    session.commit()
+
+    session.refresh(db_user)
+
+    return db_user
