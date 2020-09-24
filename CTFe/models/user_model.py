@@ -28,6 +28,7 @@ class User(Base):
         nullable=False,
         server_default=enums.UserType.PLAYER.name,
     )
+    # user_type <PLAYER> can join a team
     team_id = sa.Column(
         sa.Integer(),
         sa.ForeignKey("teams.id"),
@@ -35,6 +36,11 @@ class User(Base):
     team = relationship(
         "Team",
         back_populates="players",
+    )
+    # user_type <CONTRIBUTOR> can be owner of challenges
+    challenges = relationship(
+        "Challenge",
+        back_populates="owner",
     )
 
     def __repr__(self):

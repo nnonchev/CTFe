@@ -40,6 +40,14 @@ class Challenge(Base):
         back_populates="challenge",
         cascade="all, delete-orphan",
     )
+    owner_id = sa.Column(
+        sa.Integer(),
+        sa.ForeignKey("users.id"),
+    )
+    owner = relationship(
+        "User",
+        back_populates="challenges",
+    )
 
     def __repr__(self):
         return f"<Challenge { self.id }>"
