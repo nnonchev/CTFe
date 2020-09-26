@@ -1,4 +1,4 @@
-"""Added User model
+"""Added User table
 
 Revision ID: 6336478c122c
 Revises: b5f29b5c5bc7
@@ -22,7 +22,7 @@ def upgrade():
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('username', sa.String(), nullable=False),
     sa.Column('password', sa.String(), nullable=False),
-    sa.Column('user_type', sa.Enum('ADMIN', 'PLAYER', 'CONTRIBUTOR', name='usertype'), server_default='PLAYER', nullable=False),
+    sa.Column('user_type', sa.String(), nullable=False),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('username')
     )
