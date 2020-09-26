@@ -16,6 +16,14 @@ class Team(Base):
         unique=True,
         nullable=False,
     )
+    captain_id = sa.Column(
+        sa.Integer(),
+        sa.ForeignKey("users.id"),
+    )
+    captain = relationship(
+        "User",
+        back_populates="team_created",
+    )
     players = relationship(
         "User",
         back_populates="team",

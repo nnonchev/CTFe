@@ -32,6 +32,11 @@ class User(Base):
         server_default=enums.UserType.PLAYER.name,
     )
     # user_type <PLAYER> can join a team
+    team_created = relationship(
+        "Team",
+        uselist=False,
+        back_populates="captain",
+    )
     team_id = sa.Column(
         sa.Integer(),
         sa.ForeignKey("teams.id"),
