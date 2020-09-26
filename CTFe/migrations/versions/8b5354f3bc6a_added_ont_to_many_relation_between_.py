@@ -1,4 +1,4 @@
-"""Added ont to many relation between attempts and challenges
+"""Added one to many relation between attempts and challenges
 
 Revision ID: 8b5354f3bc6a
 Revises: ab3e2713831b

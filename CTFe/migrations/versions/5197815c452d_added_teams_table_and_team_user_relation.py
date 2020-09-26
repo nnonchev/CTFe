@@ -1,7 +1,7 @@
 """Added teams table and team-user relation
 
 Revision ID: 5197815c452d
-Revises: 74e719e9a182
+Revises: 6336478c122c
 Create Date: 2020-09-17 13:22:58.294645
 
 """
@@ -11,7 +11,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = '5197815c452d'
-down_revision = '74e719e9a182'
+down_revision = '6336478c122c'
 branch_labels = None
 depends_on = None
 
