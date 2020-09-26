@@ -15,11 +15,15 @@ from fastapi import (
 
 from CTFe.config.database import dal
 from CTFe.models import User
-from CTFe.schemas import player_schemas
+from CTFe.schemas import (
+    player_schemas,
+    team_schemas,
+)
 from CTFe.operations import (
     player_ops,
     auth_ops,
     user_ops,
+    team_ops,
 )
 from CTFe.utils import enums
 
@@ -106,3 +110,62 @@ def delete_player(
     """ Delete player record from DB """
 
     player_ops.delete_player(session, db_player)
+
+
+@router.post("/create-team", response_model=player_schemas.Details)
+def create_team(
+    *,
+    team_create: team_schemas.Create,
+    db_player: User = Depends(auth_ops.get_current_user),
+    session: Session = Depends(dal.get_session),
+) -> player_schemas.Details:
+    """ Create team and assign this player as the captain """
+
+    # Make sure this player is not part of another team
+    if db_player.team is not None:
+        raise HTTPException(
+            status.HTTP_403_FORBIDDEN,
+            detail="You are already part of a team"
+        )
+
+    conditions = and_(
+        Team.name == team_create.name,
+    )
+
+    db_team = team_ops.query_teams_by_(session, conditions).first()
+
+    if db_team is not None:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=f"The name: { team_create.name } is already taken",
+        )
+
+    db_team = team_ops.create_team(session, team_create)
+    db_player = player_ops.create_team(session, db_player, db_team)
+
+    return db_player
+
+
+# TODO
+@router.patch("/invite-player/{player_id}", response_model=player_schemas.Details)
+def create_team(
+    *,
+    player_id: int,
+    db_player: User = Depends(auth_ops.get_current_user),
+    session: Session = Depends(dal.get_session),
+) -> player_schemas.Details:
+    """ Invite player to join the team """
+
+    pass
+
+
+# TODO
+@router.patch("/quit-team", response_model=player_schemas.Details)
+def quit_team(
+    *,
+    db_player: User = Depends(auth_ops.get_current_user),
+    session: Session = Depends(dal.get_session),
+) -> player_schemas.Details:
+    """ Quit team and assign the next member as captain or delete team if no other members """
+
+    pass
