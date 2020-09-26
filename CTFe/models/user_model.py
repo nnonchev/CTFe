@@ -1,7 +1,6 @@
 import sqlalchemy as sa
 from sqlalchemy import event
 from sqlalchemy.orm import relationship
-from sqlalchemy.ext.hybrid import hybrid_property
 
 from CTFe.config.database import Base
 from CTFe.utils import (
@@ -32,11 +31,6 @@ class User(Base):
         server_default=enums.UserType.PLAYER.name,
     )
     # user_type <PLAYER> can join a team
-    team_created = relationship(
-        "Team",
-        uselist=False,
-        back_populates="captain",
-    )
     team_id = sa.Column(
         sa.Integer(),
         sa.ForeignKey("teams.id"),

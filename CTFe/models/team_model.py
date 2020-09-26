@@ -1,5 +1,6 @@
 import sqlalchemy as sa
 from sqlalchemy.orm import relationship
+from sqlalchemy.ext.hybrid import hybrid_property
 
 from CTFe.config.database import Base
 
@@ -16,14 +17,6 @@ class Team(Base):
         unique=True,
         nullable=False,
     )
-    captain_id = sa.Column(
-        sa.Integer(),
-        sa.ForeignKey("users.id"),
-    )
-    captain = relationship(
-        "User",
-        back_populates="team_created",
-    )
     players = relationship(
         "User",
         back_populates="team",
@@ -39,3 +32,7 @@ class Team(Base):
 
     def __init__(self, name):
         self.name = name
+
+    @hybrid_property
+    def captain(self):
+        return self.players[0]
