@@ -4,7 +4,10 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.ext.hybrid import hybrid_property
 
 from CTFe.config.database import Base
-from CTFe.utils import enums
+from CTFe.utils import (
+    enums,
+    pwd_utils,
+)
 
 
 class User(Base):
@@ -49,3 +52,10 @@ class User(Base):
     def __init__(self, username, password):
         self.username = username
         self.password = password
+
+
+@event.listens_for(User.password, "set", retval=True)
+def hash_password(target, value, oldvalue, initiator):
+    hashed_password = pwd_utils.hash_password(value)
+
+    return hashed_password
