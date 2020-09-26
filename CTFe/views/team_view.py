@@ -159,6 +159,7 @@ async def delete_team(
     team_ops.delete_team(session, db_team)
 
 
+# TODO Is it realy needed?
 @router.patch("/{id}/add-player/{player_id}", response_model=team_schemas.Details)
 def add_player(
     *,
@@ -216,6 +217,7 @@ def add_player(
     return db_team
 
 
+# TODO Is it realy needed?
 @router.patch("/{id}/remove-player/{player_id}", response_model=team_schemas.Details)
 def remove_player(
     *,

@@ -26,9 +26,9 @@ class User(Base):
         nullable=False,
     )
     user_type = sa.Column(
-        sa.Enum(enums.UserType),
+        sa.String(),
         nullable=False,
-        server_default=enums.UserType.PLAYER.name,
+        default=enums.UserType.PLAYER,
     )
     # user_type <PLAYER> can join a team
     team_id = sa.Column(
