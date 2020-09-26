@@ -12,7 +12,10 @@ from CTFe.operations.CRUD_ops import (
     update_record,
     delete_record,
 )
-from CTFe.models import User
+from CTFe.models import (
+    User,
+    Team,
+)
 from CTFe.schemas import player_schemas
 from CTFe.utils import enums
 
@@ -52,3 +55,18 @@ def delete_player(
     """ Delete player record """
 
     delete_record(session, db_player)
+
+
+def create_team(
+    session: Session,
+    db_player: User,
+    db_team: Team,
+) -> User:
+    """ Create team and assign player as the captain """
+
+    db_player.team = db_team
+
+    session.commit()
+    session.refresh(db_player)
+
+    return db_player
