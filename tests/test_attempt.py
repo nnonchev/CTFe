@@ -116,7 +116,7 @@ async def test_create_attempt__success():
             .first()
         )
 
-        attempt_details = attempt_schemas.AttemptDetails.from_orm(db_attempt)
+        attempt_details = attempt_schemas.Details.from_orm(db_attempt)
 
     assert response.status_code == 200
     assert response.json() == attempt_details
@@ -177,7 +177,7 @@ async def test_get_attempt__success():
         session.refresh(db_challenge)
         session.refresh(db_attempt)
 
-        attempt_details = attempt_schemas.AttemptDetails.from_orm(db_attempt)
+        attempt_details = attempt_schemas.Details.from_orm(db_attempt)
 
     async with AsyncClient(app=app, base_url=BASE_URL) as client:
         response = await client.get(f"/attempts/{db_attempt.id}")
@@ -286,7 +286,7 @@ async def test_update_attempt__success():
         session.add(db_attempt)
         session.refresh(db_attempt)
 
-        attempt_details = attempt_schemas.AttemptDetails.from_orm(db_attempt)
+        attempt_details = attempt_schemas.Details.from_orm(db_attempt)
 
     assert response.status_code == 200
     assert response.json() == attempt_details

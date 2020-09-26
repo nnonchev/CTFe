@@ -29,10 +29,11 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 def create_access_token(
     *,
-    id: int,
+    db_user: User,
     expires_delta: Optional[timedelta] = None,
 ) -> str:
-    payload = {}
+
+    subject = str(db_user.id)
 
     expire = (
         datetime.utcnow() + expires_delta
@@ -42,9 +43,11 @@ def create_access_token(
 
     issued_at = datetime.utcnow().timestamp()
 
-    payload.update({"sub": str(id)})
-    payload.update({"exp": expire})
-    payload.update({"iat": issued_at})
+    payload = {
+        "sub": subject,
+        "exp": expire,
+        "iat": issued_at,
+    }
 
     token = jwt_utils.encode(payload)
 
@@ -54,7 +57,8 @@ def create_access_token(
 def get_current_user(
     token: str = Depends(oauth2_scheme),
     session: Session = Depends(dal.get_session),
-) -> user_schemas.UserDetails:
+) -> user_schemas.Details:
+
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
@@ -69,6 +73,7 @@ def get_current_user(
         raise credentials_exception
 
     id = payload.get("sub")
+
     if id is None:
         raise credentials_exception
 
@@ -76,9 +81,9 @@ def get_current_user(
         User.id == id,
     )
 
-    db_user = user_ops.read_users_by_(session, conditions).first()
+    db_user = user_ops.query_users_by_(session, conditions).first()
 
-    if not db_user:
+    if db_user is None:
         raise credentials_exception
 
     return db_user

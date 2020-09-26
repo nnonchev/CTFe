@@ -1,45 +1,38 @@
-from typing import Optional
-
-from sqlalchemy import and_
-from sqlalchemy.orm import Session
 from fastapi import (
     Depends,
-    Cookie,
-    status,
     HTTPException,
+    status,
 )
 
-from CTFe.config.database import dal
-from CTFe.operations import user_ops
 from CTFe.models import User
-from CTFe.utils.redis_utils import redis_dal
-from CTFe.utils import (
-    enums,
-    redis_utils,
-)
+from CTFe.operations import auth_ops
+from CTFe.utils import enums
 
 
-async def validate_admin(
-    token: Optional[str] = Cookie(None),
-    session: Session = Depends(dal.get_session),
+def _validate_user_type(
+    user_type: str,
+    db_user: User = Depends(auth_ops.get_current_user),
 ):
-    if token is None:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="You are not logged in",
-        )
+    if not enums.UserType.has_type(user_type):
+        raise ValueError("Wrong user type")
 
-    user_payload = await redis_utils.retrieve_payload(token, redis_dal)
-
-    conditions = and_(
-        User.id == user_payload.id,
-        User.user_type == enums.UserType.ADMIN,
-    )
-
-    db_user = user_ops.read_users_by_(session, conditions).first()
-
-    if db_user.user_type is None:
+    if db_user.user_type != enums.UserType.ADMIN:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="You don't have the correct access"
         )
+
+
+def validate_admin(): return (
+    _validate_user_type(enums.UserType.ADMIN)
+)
+
+
+def validate_player(): return (
+    _validate_user_type(enums.UserType.PLAYER)
+)
+
+
+def validate_contributor(): return (
+    _validate_user_type(enums.UserType.CONTRIBUTOR)
+)

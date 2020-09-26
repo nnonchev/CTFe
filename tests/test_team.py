@@ -87,7 +87,7 @@ async def test_get_team__success():
         session.commit()
         session.refresh(db_team)
 
-        team_details = team_schemas.TeamDetails.from_orm(db_team)
+        team_details = team_schemas.Details.from_orm(db_team)
 
     async with AsyncClient(app=app, base_url=BASE_URL) as client:
         response = await client.get(f"/teams/{db_team.id}")
@@ -123,7 +123,7 @@ async def test_get_team_by_bane__success():
         session.add(db_team)
         session.commit()
         session.refresh(db_team)
-        team_details = team_schemas.TeamDetails.from_orm(db_team)
+        team_details = team_schemas.Details.from_orm(db_team)
 
     async with AsyncClient(app=app, base_url=BASE_URL) as client:
         response = await client.get(f"/teams/name/{db_team.name}")
@@ -182,7 +182,7 @@ async def test_update_team__success():
         session.add(db_team)
         session.refresh(db_team)
 
-        team_details = team_schemas.TeamDetails.from_orm(db_team)
+        team_details = team_schemas.Details.from_orm(db_team)
 
         team_details = team_details
 
@@ -420,7 +420,7 @@ async def test_add_player_to_team__success():
         session.add(db_team)
         session.refresh(db_team)
 
-        team_details = team_schemas.TeamDetails.from_orm(db_team)
+        team_details = team_schemas.Details.from_orm(db_team)
 
     assert response.status_code == 200
     assert response.json() == team_details
@@ -561,7 +561,7 @@ async def test_remove_player_to_team__success():
         session.add(db_team)
         session.refresh(db_team)
 
-        team_details = team_schemas.TeamDetails.from_orm(db_team)
+        team_details = team_schemas.Details.from_orm(db_team)
 
     assert response.status_code == 200
     assert response.json() == team_details

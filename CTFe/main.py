@@ -23,22 +23,37 @@ app.include_router(
 app.include_router(
     user_router,
     prefix="/users",
-)
-app.include_router(
-    player_router,
-    prefix="/players",
+    dependencies=[
+        Depends(validators.validate_admin),
+    ],
 )
 app.include_router(
     team_router,
     prefix="/teams",
+    dependencies=[
+        Depends(validators.validate_admin),
+    ],
 )
 app.include_router(
     challenge_router,
     prefix="/challenges",
+    dependencies=[
+        Depends(validators.validate_admin),
+    ],
 )
 app.include_router(
     attempt_router,
     prefix="/attempts",
+    dependencies=[
+        Depends(validators.validate_admin),
+    ],
+)
+app.include_router(
+    player_router,
+    prefix="/players",
+    dependencies=[
+        Depends(validators.validate_player),
+    ],
 )
 
 

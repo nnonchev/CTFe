@@ -6,14 +6,14 @@ from typing import (
 from pydantic import BaseModel
 
 
-class ChallengeCreate(BaseModel):
+class Create(BaseModel):
     name: str
     description: Optional[str] = None
     flag: str
-    file_name: Optional[str] = None
+    owner_id: Optional[int] = None
 
 
-class ChallengeUpdate(BaseModel):
+class Update(BaseModel):
     name: Optional[str] = None
     description: Optional[str] = None
     flag: Optional[str] = None
@@ -23,13 +23,13 @@ class ChallengeUpdate(BaseModel):
         orm_mode = True
 
 
-class ChallengeDetails(BaseModel):
+class Details(BaseModel):
     id: int
     name: str
     description: str
     flag: str
     file_name: Optional[str] = None
-    owner_id: int
+    owner_id: Optional[int]
 
     class Config:
         orm_mode = True

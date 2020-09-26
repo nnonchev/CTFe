@@ -28,22 +28,34 @@ async def login(
     form_data: OAuth2PasswordRequestForm = Depends(),
     session: Session = Depends(dal.get_session),
 ):
+    """ Verify user is registered and create JWT signed access token """
+
+    incorrect_credentials_exception = HTTPException(
+        status_code=status.HTTP_400_BAD_REQUEST,
+        detail="Incorrect username or password",
+    )
+
     conditions = and_(
         User.username == form_data.username,
     )
 
-    db_user = user_ops.read_users_by_(session, conditions).first()
+    db_user = user_ops.query_users_by_(session, conditions).first()
 
-    if (
-        (db_user is None) or
-        (not pwd_utils.verify_password(form_data.password, db_user.password))
-    ):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Incorrect username or password",
-        )
+    is_correct_password = False
 
-    token = auth_ops.create_access_token(id=db_user.id)
+    try:
+        is_correct_password = pwd_utils.verify_password(form_data.password, db_user.password)
+    except ValueError:
+        raise incorrect_credentials_exception
+    except:
+        raise
+
+    if db_user is None:
+        raise incorrect_credentials_exception
+    elif not is_correct_password:
+        raise incorrect_credentials_exception
+
+    token = auth_ops.create_access_token(db_user=db_user)
 
     return {
         "token": token,
@@ -54,15 +66,17 @@ async def login(
 @router.post("/register")
 async def register(
     *,
-    user_create: user_schemas.UserCreate,
+    user_create: user_schemas.Create,
     session: Session = Depends(dal.get_session),
 ):
-    """ Check if user with username already exists """
+    """ Register user and return JWT signed access token """
+
+    # Make sure username is not taken
     conditions = and_(
         User.username == user_create.username,
     )
 
-    if user_ops.read_users_by_(session, conditions).first():
+    if user_ops.query_users_by_(session, conditions).first():
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail=f"The username: { user_create.username } is already taken"
@@ -70,7 +84,7 @@ async def register(
 
     db_user = user_ops.create_user(session, user_create)
 
-    token = auth_ops.create_access_token(id=db_user.id)
+    token = auth_ops.create_access_token(db_user=db_user)
 
     return {
         "token": token,
@@ -78,25 +92,25 @@ async def register(
     }
 
 
-@router.post(
-    "/logout",
-    status_code=204,
-)
+@router.post("/logout", status_code=204)
 async def logout_user(
     token: str = Depends(auth_ops.oauth2_scheme),
 ):
+    """ Logout user """
+
     if token is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="You are not logged in",
         )
 
+    # TODO Remove token from redis
 
-@router.get(
-    "/me",
-    response_model=user_schemas.UserDetails,
-)
-def auth_test(
+
+@router.get("/me", response_model=user_schemas.Details)
+async def auth_test(
     db_user: User = Depends(auth_ops.get_current_user),
-) -> User:
+):
+    """ Get user info """
+
     return db_user

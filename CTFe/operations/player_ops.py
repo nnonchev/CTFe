@@ -1,38 +1,54 @@
+from typing import Optional
+
 from sqlalchemy import and_
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import (
+    Session,
+    Query,
+)
 from sqlalchemy.sql.expression import BooleanClauseList
 
+from CTFe.operations.CRUD_ops import (
+    query_records,
+    update_record,
+    delete_record,
+)
 from CTFe.models import User
-from CTFe.operations import user_ops
+from CTFe.schemas import player_schemas
 from CTFe.utils import enums
 
 
-def read_players_by_(
+def query_players_by_(
     session: Session,
-    conditions: BooleanClauseList,
-) -> User:
-    """ Query DB for user records based on multiple queries """
+    conditions: Optional[BooleanClauseList] = and_(),
+) -> Query:
+    """ Query player records """
+
     conditions = and_(
         User.user_type == enums.UserType.PLAYER,
         conditions,
     )
 
-    return user_ops.read_users_by_(session, conditions)
+    query_players = query_records(session, User, conditions)
+
+    return query_players
 
 
-def quit_team(
-    db_user: User,
+def update_player(
     session: Session,
+    db_player: User,
+    player_update: player_schemas.Update,
 ) -> User:
-    """ Remove current team from player """
-    team = db_user.team
-    
+    """ Update player record """
 
-    db_user.team = None
+    db_player = update_record(session, db_player, player_update)
 
-    session.add(db_user)
-    session.commit()
+    return db_player
 
-    session.refresh(db_user)
 
-    return db_user
+def delete_player(
+    session: Session,
+    db_player: User,
+):
+    """ Delete player record """
+
+    delete_record(session, db_player)

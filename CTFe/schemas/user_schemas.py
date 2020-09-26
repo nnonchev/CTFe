@@ -8,17 +8,17 @@ from pydantic import (
 from CTFe.utils import enums
 
 
-class UserLogin(BaseModel):
+class Login(BaseModel):
     username: str
     password: str
 
 
-class UserCreate(BaseModel):
+class Create(BaseModel):
     username: str
     password: str
 
 
-class UserUpdate(BaseModel):
+class Update(BaseModel):
     password: Optional[str] = None
     user_type: Optional[str] = None
 
@@ -32,17 +32,16 @@ class UserUpdate(BaseModel):
         return v
 
 
-class UserDetails(BaseModel):
+class Details(BaseModel):
     id: int
     username: str
     user_type: enums.UserType
-    team_id: Optional[int] = None
 
     class Config:
         orm_mode = True
 
 
-class UserRedisPayload(BaseModel):
+class RedisPayload(BaseModel):
     id: int
     username: str
 

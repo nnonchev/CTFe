@@ -52,8 +52,8 @@ class Challenge(Base):
     def __repr__(self):
         return f"<Challenge { self.id }>"
 
-    def __init__(self, name, description, flag, file_name):
+    def __init__(self, name, description, flag, owner_id):
         self.name = name
         self.description = description
         self.flag = flag
-        self.file_name = file_name
+        self.owner_id = owner_id

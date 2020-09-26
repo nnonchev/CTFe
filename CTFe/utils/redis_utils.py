@@ -36,7 +36,7 @@ class RedisDataAccessLayer:
 
 
 async def store_payload(
-    user_payload: user_schemas.UserRedisPayload,
+    user_payload: user_schemas.RedisPayload,
     redis_dal: RedisDataAccessLayer,
 ) -> str:
     """ Store user_payload in redis """
@@ -63,7 +63,7 @@ async def store_payload(
 async def retrieve_payload(
     token: str,
     redis_dal: RedisDataAccessLayer,
-) -> user_schemas.UserRedisPayload:
+) -> user_schemas.RedisPayload:
     id: int = (
         int(
             jwt_utils
@@ -81,7 +81,7 @@ async def retrieve_payload(
             detail=f"Can not retrieve user",
         )
 
-    user_payload = user_schemas.UserRedisPayload.parse_raw(payload)
+    user_payload = user_schemas.RedisPayload.parse_raw(payload)
     return user_payload
 
 

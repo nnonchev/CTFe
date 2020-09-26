@@ -104,7 +104,7 @@ async def test_get_user__success():
         response = await client.get(f"/users/{db_user.id}")
 
     assert response.status_code == 200
-    assert response.json() == user_schemas.UserDetails.from_orm(db_user)
+    assert response.json() == user_schemas.Details.from_orm(db_user)
 
     with dal.get_session_ctx() as session:
         session.delete(db_user)
@@ -148,7 +148,7 @@ async def test_get_user_by_username__success():
         response = await client.get(f"/users/username/{db_user.username}")
 
     assert response.status_code == 200
-    assert response.json() == user_schemas.UserDetails.from_orm(db_user)
+    assert response.json() == user_schemas.Details.from_orm(db_user)
 
     with dal.get_session_ctx() as session:
         session.delete(db_user)
@@ -216,7 +216,7 @@ async def test_update_user__success2():
         session.refresh(db_user)
 
     assert response.status_code == 200
-    assert response.json() == user_schemas.UserDetails.from_orm(db_user)
+    assert response.json() == user_schemas.Details.from_orm(db_user)
 
     with dal.get_session_ctx() as session:
         session.delete(db_user)

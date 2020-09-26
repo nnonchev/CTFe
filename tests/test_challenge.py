@@ -64,7 +64,7 @@ async def test_create_challenge__success():
             .first()
         )
 
-        challenge_details = challenge_schemas.ChallengeDetails.from_orm(
+        challenge_details = challenge_schemas.Details.from_orm(
             db_challenge)
 
     assert response.status_code == 200
@@ -105,7 +105,7 @@ async def test_get_challenge__success():
         session.commit()
         session.refresh(db_challenge)
 
-        challenge_details = challenge_schemas.ChallengeDetails.from_orm(
+        challenge_details = challenge_schemas.Details.from_orm(
             db_challenge)
 
     async with AsyncClient(app=app, base_url=BASE_URL) as client:
@@ -146,7 +146,7 @@ async def test_get_challenge_by_name__success():
         session.commit()
         session.refresh(db_challenge)
 
-        challenge_details = challenge_schemas.ChallengeDetails.from_orm(
+        challenge_details = challenge_schemas.Details.from_orm(
             db_challenge)
 
     async with AsyncClient(app=app, base_url=BASE_URL) as client:
@@ -209,7 +209,7 @@ async def test_update_challenge__success():
         session.add(db_challenge)
         session.refresh(db_challenge)
 
-        challenge_details = challenge_schemas.ChallengeDetails.from_orm(
+        challenge_details = challenge_schemas.Details.from_orm(
             db_challenge)
 
         challenge_details = challenge_details
@@ -313,7 +313,7 @@ async def test_upload_file_challenge__success():
         session.add(db_challenge)
         session.refresh(db_challenge)
 
-        challenge_update = challenge_schemas.ChallengeDetails.from_orm(
+        challenge_update = challenge_schemas.Details.from_orm(
             db_challenge)
 
     assert response.status_code == 200
@@ -416,7 +416,7 @@ async def test_remove_uploaded_file_challenge__success():
         session.add(db_challenge)
         session.refresh(db_challenge)
 
-        challenge_update = challenge_schemas.ChallengeDetails.from_orm(
+        challenge_update = challenge_schemas.Details.from_orm(
             db_challenge)
 
     assert response.status_code == 200

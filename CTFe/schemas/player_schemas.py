@@ -6,14 +6,14 @@ from pydantic import (
 )
 
 
-class PlayerUpdate(BaseModel):
+class Update(BaseModel):
     password: Optional[str] = None
 
     class Config:
         orm_mode = True
 
 
-class PlayerDetails(BaseModel):
+class Details(BaseModel):
     id: int
     username: str
     team_id: Optional[int] = None
