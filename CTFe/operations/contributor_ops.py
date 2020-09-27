@@ -12,8 +12,15 @@ from CTFe.operations.CRUD_ops import (
     update_record,
     delete_record,
 )
-from CTFe.models import User
-from CTFe.schemas import contributor_schemas
+from CTFe.operations import challenge_ops
+from CTFe.models import (
+    User,
+    Challenge,
+)
+from CTFe.schemas import (
+    contributor_schemas,
+    challenge_schemas,
+)
 from CTFe.utils import enums
 
 
@@ -52,3 +59,30 @@ def delete_contributor(
     """ Delete contributor record """
 
     delete_record(session, db_contributor)
+
+
+def create_challenge(
+    session: Session,
+    challenge_create: challenge_schemas.Create,
+    db_contributor: User
+):
+    """ Create a challenge and assign contributor to it """
+
+    challenge_create.owner_id = db_contributor.id
+
+    db_challenge = challenge_ops.create_challenge(session, challenge_create)
+
+
+def remove_challenge(
+    session: Session,
+    db_challenge: Challenge,
+    db_contributor: User,
+) -> User:
+    """ Remove challenge from contributor """
+
+    db_contributor.challenges.remove(db_challenge)
+
+    session.commit()
+    session.refresh(db_contributor)
+
+    return db_contributor
