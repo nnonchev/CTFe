@@ -57,7 +57,7 @@ def delete_player(
     delete_record(session, db_player)
 
 
-def create_team(
+def lead_team(
     session: Session,
     db_player: User,
     db_team: Team,
@@ -109,7 +109,7 @@ def invite_player(
     session.commit()
 
 
-def delete_invitation(
+def remove_invitation(
     session: Session,
     db_player: User,
     db_team: Team,

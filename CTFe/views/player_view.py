@@ -127,8 +127,8 @@ def delete_player(
     player_ops.delete_player(session, db_player)
 
 
-@router.post("/create-team", response_model=player_schemas.Details)
-def create_team(
+@router.post("/lead-team", response_model=player_schemas.Details)
+def lead_team(
     *,
     team_create: team_schemas.Create,
     db_player: User = Depends(auth_ops.get_current_user),
@@ -157,7 +157,7 @@ def create_team(
         )
 
     db_team = team_ops.create_team(session, team_create)
-    db_player = player_ops.create_team(session, db_player, db_team)
+    db_player = player_ops.lead_team(session, db_player, db_team)
 
     return db_player
 
@@ -242,7 +242,7 @@ def invite_player(
 
 
 @router.patch("/delete-invite/{player_id}", status_code=204)
-def delete_invite(
+def remove_invitation(
     *,
     player_id: int,
     db_player: User = Depends(auth_ops.get_current_user),
@@ -279,7 +279,7 @@ def delete_invite(
             detail=f"This player has not been invited",
         )
 
-    player_ops.delete_invitation(session, db_new_player, db_team)
+    player_ops.remove_invitation(session, db_new_player, db_team)
 
 
 @router.patch("/accept-invite/{team_id}", status_code=204)
