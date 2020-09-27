@@ -41,6 +41,12 @@ async def login(
 
     db_user = user_ops.query_users_by_(session, conditions).first()
 
+    if db_user is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found",
+        )
+
     is_correct_password = False
 
     try:
