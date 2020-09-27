@@ -15,6 +15,7 @@ none_value_error = (
 # Application specific configs
 # -----------------------------
 MAX_TEAM_MEMBERS = 5
+MAX_TEAM_INVITES = 10
 UPLOAD_FILE_SIZE = 10_000
 UPLOAD_FILE_LOCATION = os.path.join(os.getcwd(), "uploaded_files")
 
