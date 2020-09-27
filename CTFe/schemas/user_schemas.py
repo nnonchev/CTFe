@@ -16,6 +16,13 @@ class Login(BaseModel):
 class Create(BaseModel):
     username: str
     password: str
+    user_type: Optional[str] = enums.UserType.PLAYER
+
+    @validator("user_type")
+    def validate_user_type(cls, v):
+        if not enums.UserType.has_type(v):
+            raise ValueError(f"Incorrect user_type")
+        return v
 
 
 class Update(BaseModel):
