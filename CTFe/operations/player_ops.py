@@ -70,3 +70,52 @@ def create_team(
     session.refresh(db_player)
 
     return db_player
+
+
+def quit_team(
+    session: Session,
+    db_player: User,
+) -> User:
+    """ Remove player from team """
+    db_player.team = None
+
+    session.commit()
+    session.refresh(db_player)
+
+    return db_player
+
+
+def accept_invite(
+    session: Session,
+    db_player: User,
+    db_team: Team,
+) -> User:
+    """ add player to team """
+    db_player.team = db_team
+    db_player.team_invites.remove(db_team)
+
+    session.commit()
+
+
+def invite_player(
+    session: Session,
+    db_player: User,
+    db_team: Team,
+):
+    """ Invite another player to join the team """
+
+    db_team.player_invites.append(db_player)
+
+    session.commit()
+
+
+def delete_invitation(
+    session: Session,
+    db_player: User,
+    db_team: Team,
+):
+    """ Delete invitation for player to join the team """
+
+    db_team.player_invites.remove(db_player)
+
+    session.commit()

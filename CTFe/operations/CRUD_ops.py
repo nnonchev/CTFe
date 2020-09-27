@@ -45,7 +45,7 @@ def query_records(
 def update_record(
     session: Session,
     db_model: ModelBase,
-    schema_update: Optional[SchemaBase] = [],
+    schema_update: Optional[SchemaBase] = SchemaBase(),
 ) -> ModelBase:
     """ Update DB record """
 

@@ -54,34 +54,6 @@ def update_team(
     return db_team
 
 
-def add_player(
-    session: Session,
-    db_team: Team,
-    player: User,
-) -> Team:
-    """ Add player to team """
-
-    db_team.players.append(player)
-
-    db_team = update_record(session, db_team)
-
-    return db_team
-
-
-def remove_player(
-    session: Session,
-    db_team: Team,
-    player: User,
-) -> Team:
-    """ Remove player from team """
-
-    db_team.players.remove(player)
-
-    team_update = update_record(session, db_team)
-
-    return db_team
-
-
 def delete_team(
     session: Session,
     db_team: Team,
