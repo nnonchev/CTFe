@@ -5,7 +5,28 @@ from typing import (
 
 from pydantic import BaseModel
 
-from CTFe.schemas import user_schemas
+
+class TeamCaptain(BaseModel):
+    id: int
+
+    class Config:
+        orm_mode = True
+
+
+class TeamMember(BaseModel):
+    id: int
+    username: str
+
+    class Config:
+        orm_mode = True
+
+
+class MemberInvite(BaseModel):
+    id: int
+    username: str
+
+    class Config:
+        orm_mode = True
 
 
 class Create(BaseModel):
@@ -22,7 +43,9 @@ class Update(BaseModel):
 class Details(BaseModel):
     id: int
     name: str
-    players: List[user_schemas.Details] = None
+    players: List[TeamMember] = None
+    captain: Optional[TeamCaptain] = None
+    player_invites: Optional[List[MemberInvite]] = None
 
     class Config:
         orm_mode = True
