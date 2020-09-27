@@ -11,10 +11,11 @@ from CTFe.utils import (
 from CTFe.views import (
     auth_router,
     user_router,
-    player_router,
     team_router,
     challenge_router,
     attempt_router,
+    player_router,
+    contributor_router,
 )
 
 
@@ -56,6 +57,13 @@ app.include_router(
     prefix="/players",
     dependencies=[
         Depends(validators.validate_user_type(enums.UserType.PLAYER)),
+    ],
+)
+app.include_router(
+    contributor_router,
+    prefix="/contributors",
+    dependencies=[
+        Depends(validators.validate_user_type(enums.UserType.CONTRIBUTOR)),
     ],
 )
 
