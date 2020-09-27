@@ -3,6 +3,7 @@ from sqlalchemy import event
 from sqlalchemy.orm import relationship
 
 from CTFe.config.database import Base
+from CTFe.models.association_tables import team_player_invite_table
 from CTFe.utils import (
     enums,
     pwd_utils,
@@ -38,6 +39,11 @@ class User(Base):
     team = relationship(
         "Team",
         back_populates="players",
+    )
+    team_invites = relationship(
+        "Team",
+        secondary=team_player_invite_table,
+        back_populates="player_invites",
     )
     # user_type <CONTRIBUTOR> can be owner of challenges
     challenges = relationship(
