@@ -54,10 +54,6 @@ class User(Base):
     def __repr__(self):
         return f"<User { self.id }>"
 
-    def __init__(self, username, password):
-        self.username = username
-        self.password = password
-
 
 @event.listens_for(User.password, "set", retval=True)
 def hash_password(target, value, oldvalue, initiator):
