@@ -34,7 +34,8 @@ async def test_create_user__already_exists():
 
     assert response.status_code == 409
     assert response.json() == {
-        "detail": f"The username: { user_data['username'] } is already taken"}
+        "detail": f"The username: { user_data['username'] } is already taken"
+    }
 
     with dal.get_session_ctx() as session:
         session.delete(db_user)
